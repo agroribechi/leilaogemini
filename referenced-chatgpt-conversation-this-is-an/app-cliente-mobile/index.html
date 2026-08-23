@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#101410" />
+    <title>Arremate — Leilões premium</title>
+    <link rel="stylesheet" href="style.css?v=5.0" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div class="brand"><span class="brand-mark">A</span><span>ARREMATE</span></div>
+        <button class="avatar" aria-label="Abrir perfil">AS</button>
+      </header>
+
+      <section class="screen active" data-screen="home">
+        <p class="eyebrow">BEM-VINDO, ANDRÉ</p>
+        <h1>Seu próximo<br /><em>grande lote.</em></h1>
+        <div class="membership"><span class="live-dot"></span><span>ASSINANTE PREMIUM</span><strong>Ativo</strong></div>
+        <div class="section-heading"><h2>Ao vivo agora</h2><button data-go="live">Ver todos</button></div>
+        <article class="auction-card" data-go="live">
+          <div class="auction-image cattle-image"><span class="live-badge">● AO VIVO</span><div class="image-shade"></div><span class="auction-place">Uberaba · MG</span></div>
+          <div class="auction-copy"><p>REMATE ELITE NELORE</p><h3>Genética &amp; Seleção 2026</h3><div><span>▶ 1.284 assistindo</span><span>•</span><span>Lote 047</span></div></div>
+        </article>
+        <div class="section-heading"><h2>Próximos leilões</h2><button>Calendário</button></div>
+        <div class="upcoming-row">
+          <article class="mini-auction"><div class="mini-image horse-image"></div><p>23 AGO · 14H</p><h3>Haras Imperial</h3><span>Equinos de elite</span></article>
+          <article class="mini-auction"><div class="mini-image farm-image"></div><p>25 AGO · 19H</p><h3>Estância Sul</h3><span>Reprodutores Angus</span></article>
+        </div>
+      </section>
+
+      <section class="screen" data-screen="live">
+        <div class="backline"><button data-go="home">‹ Voltar</button><span class="live-badge">● AO VIVO</span></div>
+        <div class="video-container">
+          <div class="video-header">
+            <span class="auth-badge">TRANSMISSÃO AUTORIZADA</span>
+            <button id="change-video-btn" class="text-link-btn">Trocar vídeo ⚙</button>
+          </div>
+          <div class="video-wrapper">
+            <div id="video-placeholder" class="video-placeholder">Carregando transmissão...</div>
+            <iframe id="youtube-player" src="" title="Transmissão do Leilão" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="display:none;"></iframe>
+          </div>
+        </div>
+        <div class="auction-title"><div><p>REMATE ELITE NELORE</p><h2>Genética &amp; Seleção 2026</h2></div><button class="icon-button favorite" aria-label="Favoritar">♡</button></div>
+        <div class="lot-card">
+          <div class="lot-label"><span>LOTE ATUAL</span><strong id="lot-number">047</strong></div>
+          <div class="lot-main"><p>VALOR ATUAL</p><h1 id="price">R$ 18.500,00</h1><span class="up-arrow">↑ R$ 500,00 no último lance</span></div>
+          <div class="lot-divider"></div>
+          <h3 id="description">20 novilhas Nelore prenhes</h3>
+          <p class="details">Linhagem selecionada · 24 meses · Fazenda Santa Clara</p>
+          <div class="lot-actions"><button class="outline-button" id="alert-button">♢ Criar alerta</button><button class="gold-button" id="save-button">Salvar lote</button></div>
+        </div>
+        <button id="whatsapp-bid-btn" class="whatsapp-btn floating-bid-btn" style="display:none;">
+          <span style="font-size:20px;">💬</span> Dar Lance pelo WhatsApp
+        </button>
+        <div class="section-heading history-heading"><h2>Movimentação</h2><button data-go="history">Histórico completo</button></div>
+        <ol class="timeline">
+          <li><span class="time">14:35:21</span><div><strong>R$ 18.500,00</strong><small>Novo lance registrado</small></div></li>
+          <li><span class="time">14:35:08</span><div><strong>R$ 18.000,00</strong><small>Atualização de preço</small></div></li>
+          <li><span class="time">14:34:32</span><div><strong>Lote 047</strong><small>Lote iniciado</small></div></li>
+        </ol>
+      </section>
+
+      <section class="screen" data-screen="history">
+        <p class="eyebrow">REMATE ELITE NELORE</p><h1>Histórico de<br /><em>lotes.</em></h1>
+        <div class="filter-row"><button class="filter active-filter">Todos</button><button class="filter">Arrematados</button><button class="filter">Favoritos</button></div>
+        <div class="history-list">
+          <article><span class="lot-chip">047</span><div><strong>20 novilhas Nelore prenhes</strong><small>Agora · em andamento</small></div><b>R$ 18.500</b></article>
+          <article><span class="lot-chip muted">046</span><div><strong>Touro Nelore PO, 36 meses</strong><small>14:28 · arrematado</small></div><b>R$ 42.000</b></article>
+          <article><span class="lot-chip muted">045</span><div><strong>25 bezerras Nelore</strong><small>14:17 · arrematado</small></div><b>R$ 31.500</b></article>
+          <article><span class="lot-chip muted">044</span><div><strong>Embriões sexados, lote especial</strong><small>14:02 · arrematado</small></div><b>R$ 27.000</b></article>
+        </div>
+      </section>
+
+      <section class="screen" data-screen="favorites">
+        <p class="eyebrow">SUA SELEÇÃO</p><h1>Lotes<br /><em>favoritos.</em></h1>
+        <article class="saved-card"><div class="saved-image cattle-image"></div><div><span class="live-badge">● AO VIVO</span><h3>Lote 047</h3><p>20 novilhas Nelore prenhes</p><strong>R$ 18.500,00</strong></div></article>
+        <div class="empty-note">Você receberá avisos quando houver novo lance nos lotes salvos.</div>
+      </section>
+
+      <section class="screen" data-screen="profile">
+        <div class="profile-hero"><span class="profile-avatar">AS</span><div><p>ASSINANTE PREMIUM</p><h2>André Silva</h2><span>Plano ativo</span></div></div>
+        <div class="profile-menu"><button>Minha assinatura <span>›</span></button><button>Notificações <span>›</span></button><button>Central de ajuda <span>›</span></button><button>Termos e privacidade <span>›</span></button></div>
+      </section>
+
+      <nav class="bottom-nav">
+        <button class="nav-item active" data-go="home"><span>⌂</span>Início</button>
+        <button class="nav-item" data-go="live"><span>◉</span>Ao vivo</button>
+        <button class="nav-item" data-go="history"><span>◷</span>Histórico</button>
+        <button class="nav-item" data-go="favorites"><span>♡</span>Salvos</button>
+        <button class="nav-item" data-go="profile"><span>◌</span>Perfil</button>
+      </nav>
+    </main>
+    <div class="toast" role="status"></div>
+    <script src="app.js?v=7.0"></script>
+  </body>
+</html>

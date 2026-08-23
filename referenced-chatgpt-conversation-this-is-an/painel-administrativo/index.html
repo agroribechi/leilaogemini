@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <title>Arremate Operações</title>
+    <link rel="stylesheet" href="style.css?v=4.0" />
+  </head>
+  <body>
+    <div class="layout">
+      <aside class="sidebar">
+        <div class="logo"><span>A</span><div>ARREMATE<small>OPERAÇÕES</small></div></div>
+        <nav>
+          <button class="side-link active" data-page="dashboard"><i>▦</i> Visão geral</button>
+          <button class="side-link" data-page="auctions"><i>◉</i> Leilões</button>
+          <button class="side-link" data-page="quality"><i>⌁</i> Qualidade OCR <b>3</b></button>
+          <button class="side-link" data-page="subscribers"><i>♙</i> Assinantes</button>
+          <button class="side-link" data-page="settings"><i>⚙</i> Configurações</button>
+        </nav>
+        <div class="operator"><span class="operator-avatar">AS</span><div><strong>André Silva</strong><small>Administrador</small></div><button>⌄</button></div>
+      </aside>
+      <main>
+        <header class="header"><div><p class="eyebrow">OPERAÇÃO EM TEMPO REAL</p><h1 id="page-title">Visão geral</h1></div><div class="header-actions"><span class="connection"><i></i> Sistema conectado</span><button class="outline">Exportar</button><button class="primary" id="new-auction">+ Novo leilão</button></div></header>
+
+        <section class="page active" data-page="dashboard">
+          <div class="active-auction">
+            <div>
+              <p>LEILÃO EM OPERAÇÃO</p>
+              <h2 id="active-auction-name">Remate Elite Nelore — Genética &amp; Seleção 2026</h2>
+              <span id="active-auction-location">Uberaba, MG · Iniciado às 14:00</span>
+            </div>
+            <div class="active-status">
+              <span><i></i> AO VIVO</span>
+              <strong>01:42:18</strong>
+              <div class="btn-group">
+                <button class="outline" id="edit-auction-btn">⚙ Editar Leilão</button>
+                <button class="outline" id="manage-auctions-btn">Gerenciar leilões →</button>
+              </div>
+            </div>
+          </div>
+          <div class="metrics"><article><span class="metric-icon gold">◈</span><p>Lote atual</p><strong id="metric-lot">047</strong><small id="metric-desc">20 novilhas Nelore prenhes</small></article><article><span class="metric-icon green">R$</span><p>Valor atual</p><strong id="metric-price">18.500</strong><small class="positive">↑ Atualizado no último lance</small></article><article><span class="metric-icon blue">◉</span><p>Espectadores</p><strong>1.284</strong><small>↑ 8,4% nos últimos 10 min</small></article><article><span class="metric-icon gray">✓</span><p>Precisão do OCR</p><strong>98,4%</strong><small>Últimas 100 leituras</small></article></div>
+          <div class="split-grid">
+            <section class="panel live-reading"><div class="panel-heading"><div><h2>Leitura recebida agora</h2><p>Atualização do capturador local</p></div><span class="fresh"><i></i> há 1 segundo</span></div><div class="reading-grid"><div><span>LOTE</span><strong id="current-lot">047</strong></div><div><span>PREÇO</span><strong id="current-price">R$ 18.500,00</strong></div><div><span>DESCRIÇÃO</span><strong id="current-description">20 novilhas Nelore prenhes</strong></div></div><div class="reading-footer"><span>Fonte: Operador Uberaba-01</span><span>Confiança: <b>98,7%</b></span><button class="outline small" id="correct-reading">Corrigir leitura</button></div></section>
+            <section class="panel"><div class="panel-heading"><div><h2>Eventos recentes</h2><p>Publicados para os assinantes</p></div><button class="text-button">Ver todos</button></div><ol class="event-list" id="recent-events-list"><li><time>14:35:21</time><div><strong>R$ 18.500,00</strong><span>Preço atualizado · Lote 047</span></div><em>Publicado</em></li><li><time>14:35:08</time><div><strong>R$ 18.000,00</strong><span>Preço atualizado · Lote 047</span></div><em>Publicado</em></li><li><time>14:34:32</time><div><strong>Novo lote: 047</strong><span>20 novilhas Nelore prenhes</span></div><em>Publicado</em></li></ol></section>
+          </div>
+          <section class="panel table-panel"><div class="panel-heading"><div><h2>Fila de revisão</h2><p>Leituras com baixa confiança que precisam de validação humana</p></div><button class="text-button" data-page="quality">Abrir fila →</button></div><table><thead><tr><th>HORÁRIO</th><th>LEILÃO</th><th>CAMPO</th><th>LEITURA</th><th>CONFIANÇA</th><th></th></tr></thead><tbody><tr><td>14:32:41</td><td>Elite Nelore</td><td>Descrição</td><td>“20 novihas Nelore…”</td><td><span class="warning">74,2%</span></td><td><button class="review">Revisar</button></td></tr><tr><td>14:11:06</td><td>Elite Nelore</td><td>Preço</td><td>“R$ 27.000,00”</td><td><span class="warning">81,6%</span></td><td><button class="review">Revisar</button></td></tr></tbody></table></section>
+        </section>
+
+        <section class="page" data-page="auctions"><div class="section-bar"><div><h2>Leilões Cadastrados</h2><p>Crie, edite a transmissão e selecione o evento em operação.</p></div><button class="primary" id="new-auction-alt">+ Novo leilão</button></div><div class="auction-table panel"><table><thead><tr><th>LEILÃO</th><th>LOCAL</th><th>STATUS</th><th>TRANSMISSÃO YOUTUBE</th><th>AÇÕES</th></tr></thead><tbody id="auctions-tbody"><tr><td colspan="5" style="text-align:center; padding:20px;">Carregando leilões...</td></tr></tbody></table></div></section>
+
+        <section class="page" data-page="quality"><div class="section-bar"><div><h2>Qualidade da leitura</h2><p>Revise leituras incertas antes que elas sejam publicadas.</p></div><span class="counter">3 aguardando revisão</span></div><section class="panel review-card"><div class="capture-preview"><span>FRAME CAPTURADO</span><div class="fake-ocr"><b>LOTE 048</b><strong>R$ 21.000,00</strong><p>25 novilhas Nelore prenhes</p></div></div><div class="review-form"><p class="eyebrow">REVISÃO NECESSÁRIA · 74,2%</p><h2>Confirme os dados do lote</h2><label>Lote<input value="048" /></label><label>Preço<input value="R$ 21.000,00" /></label><label>Descrição<input value="25 novilhas Nelore prenhes" /></label><div><button class="outline" id="skip-review">Ignorar</button><button class="primary" id="approve-review">Aprovar e publicar</button></div></div></section></section>
+
+        <section class="page" data-page="subscribers"><div class="section-bar"><div><h2>Assinantes</h2><p>Acompanhe os clientes e a situação das assinaturas.</p></div><button class="outline">Baixar relatório</button></div><div class="metrics compact"><article><p>Assinantes ativos</p><strong>1.284</strong><small class="positive">↑ 12,5% neste mês</small></article><article><p>Visualizando agora</p><strong>862</strong><small>67% dos assinantes ativos</small></article><article><p>Renovações próximas</p><strong>36</strong><small>Nos próximos 7 dias</small></article></div></section>
+
+        <section class="page" data-page="settings"><div class="section-bar"><div><h2>Configurações</h2><p>Integrações, permissões e preferências operacionais.</p></div></div><div class="settings-grid"><section class="panel"><h2>Integração de dados</h2><p>O painel está conectado à API local e ao WebSocket em tempo real.</p><span class="status ready"><i></i> Conectado</span></section><section class="panel"><h2>Equipe de operação</h2><p>Defina quais operadores podem publicar e corrigir leituras em cada leilão.</p><button class="outline">Gerenciar equipe</button></section></div></section>
+      </main>
+    </div>
+    
+    <!-- Modal Novo Leilão -->
+    <div class="modal-overlay" id="new-auction-modal">
+      <div class="modal-box">
+        <button class="modal-close-btn" data-close="new-auction-modal">×</button>
+        <p class="eyebrow">NOVO EVENTO</p>
+        <h2>Cadastrar leilão</h2>
+        <label>Nome do leilão</label>
+        <input id="auction-name" placeholder="Ex.: Remate Elite Nelore" required />
+        <label>Local</label>
+        <input id="auction-location" placeholder="Ex.: Uberaba, MG" required />
+        <label for="youtube_url">Link da Transmissão (YouTube)</label>
+        <input type="url" id="youtube_url" name="youtube_url" placeholder="Ex: https://youtube.com/watch?v=...">
+        <small>Cole o link do vídeo ou da live para exibir no app do cliente.</small>
+        <div class="form-group">
+          <label for="whatsapp_number">Número do WhatsApp (Leiloeiro)</label>
+          <input type="text" id="whatsapp_number" name="whatsapp_number" placeholder="Ex: 5511999999999">
+          <small>Número com DDI e DDD que receberá as mensagens de lance dos clientes.</small>
+        </div>
+        <div class="dialog-actions">
+          <button class="outline" data-close="new-auction-modal">Cancelar</button>
+          <button class="primary" id="save-auction">Criar leilão</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Editar Leilão Específico -->
+    <div class="modal-overlay" id="edit-auction-modal">
+      <div class="modal-box">
+        <button class="modal-close-btn" data-close="edit-auction-modal">×</button>
+        <p class="eyebrow">CONFIGURAÇÃO DO LEILÃO</p>
+        <h2>Editar Leilão</h2>
+        <input type="hidden" id="edit-auction-id" />
+        <label>Nome do leilão</label>
+        <input id="edit-name" required />
+        <label>Local</label>
+        <input id="edit-location" required />
+        <label>Status</label>
+        <select id="edit-status">
+          <option value="live">Ao vivo (Em operação)</option>
+          <option value="scheduled">Agendado</option>
+          <option value="finished">Encerrado</option>
+        </select>
+        <label>Link da Transmissão YouTube</label>
+        <input id="edit-youtube" placeholder="https://www.youtube.com/watch?v=..." />
+        <label>Número do WhatsApp (Leiloeiro)</label>
+        <input id="edit-whatsapp" placeholder="Ex: 5511999999999" />
+        <div class="dialog-actions">
+          <button class="outline" data-close="edit-auction-modal">Cancelar</button>
+          <button class="primary" id="save-edit-auction">Salvar Alterações</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast" role="status"></div>
+    <script src="app.js?v=5.0"></script>
+  </body>
+</html>
