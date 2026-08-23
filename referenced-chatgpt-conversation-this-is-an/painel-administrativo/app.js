@@ -1,9 +1,10 @@
 const names = { dashboard: 'Visão geral', auctions: 'Leilões', quality: 'Qualidade OCR', subscribers: 'Assinantes', settings: 'Configurações' };
 function getApiUrl() {
   if (window.API_URL) return window.API_URL;
-  if (localStorage.getItem('ARREMATE_API_URL')) return localStorage.getItem('ARREMATE_API_URL');
   const host = window.location.hostname;
   const proto = window.location.protocol;
+  const saved = localStorage.getItem('ARREMATE_API_URL');
+  if (saved && !saved.includes('127.0.0.1') && !saved.includes('localhost')) return saved;
   if (host === 'localhost' || host === '127.0.0.1') return 'http://127.0.0.1:8000';
   if (host.includes('-admin.') || host.includes('-mobile.')) {
     return `${proto}//${host.replace('-admin.', '-api.').replace('-mobile.', '-api.')}`;
