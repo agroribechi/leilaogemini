@@ -9,8 +9,22 @@ def clean_text(value: str) -> str:
 
 
 def normalize_lot(value: str) -> int | None:
-    match = re.search(r"(?:lote\s*[:#-]?\s*)?(\d{1,6})", value, re.IGNORECASE)
-    return int(match.group(1)) if match else None
+    if not value:
+        return None
+    # Remove palavras de prefixo comuns (LOTE, LT, #, etc)
+    cleaned = re.sub(r'^(?:LOTE|LT|LOT|N[Oº]?|#|:\s*)+', '', value.upper(), flags=re.IGNORECASE).strip()
+    
+    # Mapeamento de substituição de confusões OCR frequentes em números
+    char_map = {'O': '0', 'Q': '0', 'D': '0', 'I': '1', 'L': '1', 'Z': '2', 'S': '5', 'B': '8'}
+    temp = ''.join(char_map.get(ch, ch) for ch in cleaned)
+    
+    match = re.search(r'(\d{1,6})', temp)
+    if match:
+        return int(match.group(1))
+    
+    # Segundo fallback: busca qualquer dígito no texto bruto original
+    match_fallback = re.search(r'(\d{1,6})', value)
+    return int(match_fallback.group(1)) if match_fallback else None
 
 
 def normalize_price_cents(value: str) -> int | None:
