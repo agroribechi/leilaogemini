@@ -23,6 +23,7 @@ function goTo(name) {
   screens.forEach((screen) => screen.classList.toggle('active', screen.dataset.screen === name));
   navItems.forEach((item) => item.classList.toggle('active', item.dataset.go === name));
   window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (name === 'favorites') renderFavorites();
 }
 
 function notify(message) {
@@ -64,14 +65,9 @@ function updateLiveView(data) {
       el.style.backgroundSize = 'cover';
       el.style.backgroundPosition = 'center';
     });
-
-    const photoContainer = document.querySelector('#captured-lot-photo-container');
-    const photoImg = document.querySelector('#captured-lot-photo');
-    if (photoContainer && photoImg) {
-      photoImg.src = imageUrl;
-      photoContainer.style.display = 'block';
-    }
   }
+
+  updateSaveButtonState();
 
   // Atualiza timeline de lances se for um novo lance
   const timeline = document.querySelector('.timeline');
@@ -302,15 +298,130 @@ function initVideoPlayer() {
   }
 }
 
-buttons.forEach((button) => button.addEventListener('click', () => goTo(button.dataset.go)));
-document.querySelector('.favorite').addEventListener('click', (event) => {
-  event.currentTarget.textContent = event.currentTarget.textContent === '\u2661' ? '\u2665' : '\u2661';
-  notify(event.currentTarget.textContent === '\u2665' ? 'Lote adicionado aos salvos' : 'Lote removido dos salvos');
-});
-const saveBtn = document.querySelector('#save-button');
-if (saveBtn) {
-  saveBtn.addEventListener('click', () => notify('Lote salvo nos seus favoritos!'));
+function getSavedLots() {
+  try {
+    return JSON.parse(localStorage.getItem('arremate_saved_lots') || '[]');
+  } catch (_) {
+    return [];
+  }
 }
+
+function isLotSaved(lotNumber) {
+  if (lotNumber == null) return false;
+  const saved = getSavedLots();
+  return saved.some(item => String(item.lot) === String(lotNumber));
+}
+
+function toggleSaveCurrentLot() {
+  const reading = window.currentReading;
+  if (!reading || reading.lot == null) {
+    notify('Nenhum lote ativo no momento');
+    return;
+  }
+
+  let saved = getSavedLots();
+  const lotStr = String(reading.lot);
+  const existsIndex = saved.findIndex(item => String(item.lot) === lotStr);
+
+  const favHeart = document.querySelector('.favorite');
+  const saveBtn = document.querySelector('#save-button');
+
+  if (existsIndex >= 0) {
+    saved.splice(existsIndex, 1);
+    localStorage.setItem('arremate_saved_lots', JSON.stringify(saved));
+    notify(`Lote ${lotStr} removido dos salvos`);
+    if (favHeart) favHeart.textContent = '♡';
+    if (saveBtn) {
+      saveBtn.textContent = 'Salvar lote';
+      saveBtn.classList.remove('outline-button');
+      saveBtn.classList.add('gold-button');
+    }
+  } else {
+    const imageUrl = reading.image_url || (reading.payload && reading.payload.image_url) || '';
+    saved.push({
+      lot: reading.lot,
+      price_cents: reading.price_cents,
+      description: reading.description || 'Lote do Leilão',
+      image_url: imageUrl,
+      saved_at: new Date().toISOString()
+    });
+    localStorage.setItem('arremate_saved_lots', JSON.stringify(saved));
+    notify(`⭐ Lote ${lotStr} salvo nos favoritos!`);
+    if (favHeart) favHeart.textContent = '♥';
+    if (saveBtn) {
+      saveBtn.textContent = '✓ Lote Salvo';
+      saveBtn.classList.remove('gold-button');
+      saveBtn.classList.add('outline-button');
+    }
+  }
+  renderFavorites();
+}
+
+function updateSaveButtonState() {
+  const reading = window.currentReading;
+  if (!reading || reading.lot == null) return;
+  const saved = isLotSaved(reading.lot);
+  const favHeart = document.querySelector('.favorite');
+  const saveBtn = document.querySelector('#save-button');
+
+  if (favHeart) favHeart.textContent = saved ? '♥' : '♡';
+  if (saveBtn) {
+    if (saved) {
+      saveBtn.textContent = '✓ Lote Salvo';
+      saveBtn.classList.remove('gold-button');
+      saveBtn.classList.add('outline-button');
+    } else {
+      saveBtn.textContent = 'Salvar lote';
+      saveBtn.classList.remove('outline-button');
+      saveBtn.classList.add('gold-button');
+    }
+  }
+}
+
+function renderFavorites() {
+  const listEl = document.querySelector('#favorites-list');
+  if (!listEl) return;
+
+  const saved = getSavedLots();
+  if (saved.length === 0) {
+    listEl.innerHTML = '<div class="empty-note">Nenhum lote salvo nos seus favoritos ainda. Clique em "Salvar lote" durante o leilão para monitorar.</div>';
+    return;
+  }
+
+  listEl.innerHTML = saved.map(item => {
+    const lotStr = item.lot != null ? String(item.lot).padStart(3, '0') : '--';
+    const priceStr = formatCurrency(item.price_cents);
+    const imgStyle = item.image_url ? `background: url('${item.image_url}') center/cover;` : '';
+    return `
+      <article class="saved-card" style="margin-bottom:10px;">
+        <div class="saved-image cattle-image" style="${imgStyle}"></div>
+        <div style="flex:1;">
+          <span class="live-badge" style="background:var(--gold); color:#151a15;">⭐ FAVORITO</span>
+          <h3 style="margin:6px 0 4px;">Lote ${lotStr}</h3>
+          <p style="margin:0 0 6px;">${item.description || 'Lote do Leilão'}</p>
+          <strong style="display:block; font-size:15px; color:var(--gold);">${priceStr}</strong>
+          <button type="button" class="remove-fav-btn" data-lot="${item.lot}" style="color:var(--soft); font-size:11px; margin-top:8px; padding:0; cursor:pointer;">✕ Remover dos salvos</button>
+        </div>
+      </article>
+    `;
+  }).join('');
+
+  listEl.querySelectorAll('.remove-fav-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const lotToRemove = btn.dataset.lot;
+      let savedList = getSavedLots().filter(i => String(i.lot) !== String(lotToRemove));
+      localStorage.setItem('arremate_saved_lots', JSON.stringify(savedList));
+      notify(`Lote ${lotToRemove} removido dos salvos`);
+      updateSaveButtonState();
+      renderFavorites();
+    });
+  });
+}
+
+buttons.forEach((button) => button.addEventListener('click', () => goTo(button.dataset.go)));
+document.querySelector('.favorite')?.addEventListener('click', toggleSaveCurrentLot);
+document.querySelector('#save-button')?.addEventListener('click', toggleSaveCurrentLot);
 
 // Gerenciamento do Modal de Alerta
 const alertModal = document.querySelector('#alert-modal');
