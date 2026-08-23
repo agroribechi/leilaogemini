@@ -305,7 +305,9 @@ function closeAlertModal() {
   if (alertModal) alertModal.style.display = 'none';
 }
 
-if (alertBtn) alertBtn.addEventListener('click', openAlertModal);
+document.querySelectorAll('#alert-button, .create-alert-btn').forEach(btn => {
+  btn.addEventListener('click', openAlertModal);
+});
 if (closeModalBtn) closeModalBtn.addEventListener('click', closeAlertModal);
 if (alertModal) {
   alertModal.addEventListener('click', (e) => {
