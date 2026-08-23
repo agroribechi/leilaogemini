@@ -39,23 +39,39 @@ class CalibrationWindow(tk.Toplevel):
         self.master = master
         self.screenshot = screenshot
         self.screen_bounds = screen_bounds
-        self.title("Calibração — desenhe as quatro regiões")
+        self.title("Calibração de Tela — Desenhe as Regiões (Modo Expandido)")
         self.active = tk.StringVar(value="video")
         self.start: tuple[int, int] | None = None
         self.rect_id: int | None = None
-        # Usa quase toda a tela disponível, preservando espaço para os controles.
-        max_width = max(1180, self.winfo_screenwidth() - 100)
-        max_height = max(720, self.winfo_screenheight() - 190)
-        self.scale = min(1, max_width / screenshot.width, max_height / screenshot.height)
-        displayed = screenshot.resize((int(screenshot.width * self.scale), int(screenshot.height * self.scale)))
+        
+        # Maximiza a janela no Windows/Linux para exibir a imagem no maior tamanho possível
+        try:
+            self.state('zoomed')
+        except Exception:
+            pass
+
+        self.update_idletasks()
+        screen_w = self.winfo_screenwidth()
+        screen_h = self.winfo_screenheight()
+
+        # Usa quase toda a resolução do monitor (deixando apenas margem para botões de controle)
+        max_width = max(1400, screen_w - 60)
+        max_height = max(850, screen_h - 130)
+        self.scale = min(1.0, max_width / screenshot.width, max_height / screenshot.height)
+        
+        disp_w = int(screenshot.width * self.scale)
+        disp_h = int(screenshot.height * self.scale)
+        displayed = screenshot.resize((disp_w, disp_h))
         self.photo = ImageTk.PhotoImage(displayed)
-        controls = ttk.Frame(self); controls.pack(fill="x", padx=8, pady=8)
+
+        controls = ttk.Frame(self); controls.pack(fill="x", padx=12, pady=8)
         for name, label in (("video", "1. Área do vídeo"), ("lot", "2. Lote"), ("price", "3. Preço"), ("description", "4. Descrição")):
-            ttk.Radiobutton(controls, text=label, variable=self.active, value=name).pack(side="left", padx=5)
-        ttk.Button(controls, text="Salvar calibração", command=self.save).pack(side="right")
-        ttk.Label(self, text="Escolha uma região acima e arraste sobre a tela. As regiões Lote, Preço e Descrição devem ficar dentro da área do vídeo.").pack(padx=8, pady=(0, 8))
-        self.canvas = tk.Canvas(self, width=displayed.width, height=displayed.height, cursor="crosshair")
-        self.canvas.pack(padx=8, pady=(0, 8))
+            ttk.Radiobutton(controls, text=label, variable=self.active, value=name).pack(side="left", padx=8)
+        ttk.Button(controls, text="💾 Salvar calibração", command=self.save).pack(side="right", padx=8)
+        ttk.Label(self, text="💡 Escolha a opção acima e clique/arraste o mouse sobre a imagem expandida para calibrar cada região.", font=("Segoe UI", 10)).pack(padx=12, pady=(0, 6), anchor="w")
+        
+        self.canvas = tk.Canvas(self, width=disp_w, height=disp_h, cursor="crosshair", bg="#101410")
+        self.canvas.pack(padx=12, pady=(0, 12))
         self.canvas.create_image(0, 0, anchor="nw", image=self.photo)
         self.draw_existing()
         self.canvas.bind("<ButtonPress-1>", self.begin)
