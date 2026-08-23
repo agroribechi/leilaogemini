@@ -129,7 +129,7 @@ class AuctionApp(tk.Tk):
         self.auction_var = tk.StringVar()
         self.select_initial_auction()
         self.running = False; self.last_signature = None; self.candidate = None; self.candidate_count = 0
-        self.active_lot = None; self.lot_change_time = 0; self.lot_image_count = 0
+        self.published_photo_lot = None
         self.status = tk.StringVar(value="Calibre as regiões antes de iniciar.")
         self.current = {name: tk.StringVar(value="—") for name in ("lot", "price", "description")}
         self.build_ui(); self.refresh_history()
@@ -223,39 +223,15 @@ class AuctionApp(tk.Tk):
             raw = {name: self.reader.read(self.capture.grab(self.regions[name]), name) for name in ("lot", "price", "description")}
             auction = self.selected_auction()
             
-            lot_num = normalize_lot(raw["lot"])
-            current_time = time.time()
-            
-            # Se mudou o lote, reseta o temporizador e libera nova captura de imagem
-            if lot_num is not None and lot_num != self.active_lot:
-                self.active_lot = lot_num
-                self.lot_change_time = current_time
-                self.lot_image_count = 0
-            
-            # Captura a foto APENAS 1 vez por lote, após passados pelo menos 4 segundos da troca de lote
-            img_b64 = None
-            time_since_change = current_time - self.lot_change_time if self.lot_change_time else 0
-            
-            if lot_num is not None and self.lot_image_count < 1 and time_since_change >= 4:
-                try:
-                    target_region = self.regions.get("video") or self.regions.get("description") or self.regions.get("lot")
-                    if target_region:
-                        crop = self.capture.grab(target_region)
-                        img_b64 = frame_to_base64(crop)
-                        self.lot_image_count += 1
-                except Exception:
-                    pass
-
             reading = Reading.now(
-                lot=lot_num,
+                lot=normalize_lot(raw["lot"]),
                 price_cents=normalize_price_cents(raw["price"]),
                 description=normalize_description(raw["description"]),
                 raw_lot=raw["lot"],
                 raw_price=raw["price"],
                 raw_description=raw["description"],
                 auction_id=auction["id"],
-                auction_name=auction["name"],
-                image_url=img_b64
+                auction_name=auction["name"]
             )
             self.show(reading); self.process(reading)
         except Exception as error:
@@ -295,6 +271,19 @@ class AuctionApp(tk.Tk):
                             price_cents=refined.price_cents if refined.price_cents is not None else reading.price_cents,
                             description=refined.description if refined.description is not None else reading.description
                         )
+
+                    # Anexa a foto do lote APENAS no primeiro envio deste lote para a API
+                    if final_reading.lot is not None and final_reading.lot != self.published_photo_lot:
+                        try:
+                            target_region = self.regions.get("video") or self.regions.get("description") or self.regions.get("lot")
+                            if target_region:
+                                crop = self.capture.grab(target_region)
+                                b64_img = frame_to_base64(crop)
+                                import dataclasses
+                                final_reading = dataclasses.replace(final_reading, image_url=b64_img)
+                                self.published_photo_lot = final_reading.lot
+                        except Exception as img_err:
+                            print("Erro ao capturar frame do lote:", img_err)
                     
                     self.history.add(final_reading)
                     self.after(0, self.refresh_history)
