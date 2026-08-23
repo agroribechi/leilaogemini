@@ -198,6 +198,7 @@ function connectRealtime() {
       const event = JSON.parse(message.data);
       if (event.type === 'reading.created' || event.type === 'reading.corrected') {
         updateLiveView(event.data);
+        loadHistory();
         notify(event.type === 'reading.corrected' ? 'Lance corrigido pela mesa' : 'Novo lance em tempo real!');
       }
       if (event.type === 'auction.updated') {

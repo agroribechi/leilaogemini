@@ -164,7 +164,11 @@ async def add_reading(payload: ReadingInput) -> dict[str, Any]:
 
 @app.get("/api/auctions/{auction_id}/readings")
 def list_readings(auction_id: str, limit: int = 50, distinct_by_lot: bool = True) -> list[dict[str, Any]]:
-    readings = database.get_readings(auction_id, min(limit, 500))
+    target_id = auction_id
+    if auction_id == "active":
+        active = get_active_auction()
+        target_id = active.get("id", "remate-elite-nelore-2026")
+    readings = database.get_readings(target_id, min(limit, 500))
     if distinct_by_lot:
         seen_lots: set[Any] = set()
         unique_readings: list[dict[str, Any]] = []
