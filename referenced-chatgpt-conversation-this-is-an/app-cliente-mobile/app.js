@@ -42,7 +42,9 @@ function updateLiveView(data) {
   
   // Evita que polling atrasado sobrescreva dados em tempo real mais recentes
   if (window.currentReading && window.currentReading.captured_at && data.captured_at) {
-    if (new Date(data.captured_at) < new Date(window.currentReading.captured_at)) {
+    const newTime = new Date(data.captured_at).getTime();
+    const curTime = new Date(window.currentReading.captured_at).getTime();
+    if (!isNaN(newTime) && !isNaN(curTime) && newTime < curTime) {
       return;
     }
   }
@@ -53,7 +55,7 @@ function updateLiveView(data) {
   const descEl = document.querySelector('#description');
   const homeCardLot = document.querySelector('#home-card-lot');
 
-  if (lotEl && data.lot !== undefined && data.lot !== null) lotEl.textContent = String(data.lot);
+  if (lotEl && data.lot !== undefined && data.lot !== null) lotEl.textContent = String(data.lot).padStart(3, '0');
   if (homeCardLot && data.lot !== undefined && data.lot !== null) homeCardLot.textContent = `Lote ${String(data.lot).padStart(3, '0')}`;
   if (priceEl && data.price_cents !== undefined && data.price_cents !== null) priceEl.textContent = formatCurrency(data.price_cents);
   if (descEl && data.description) descEl.textContent = data.description;
@@ -312,8 +314,30 @@ function isLotSaved(lotNumber) {
   return saved.some(item => String(item.lot) === String(lotNumber));
 }
 
+function getCurrentReadingToSave() {
+  if (window.currentReading && window.currentReading.lot != null) {
+    return window.currentReading;
+  }
+  const lotText = document.querySelector('#lot-number')?.textContent || '';
+  const priceText = document.querySelector('#price')?.textContent || '';
+  const descText = document.querySelector('#description')?.textContent || '';
+  
+  const lotNum = parseInt(lotText.replace(/\D/g, ''), 10) || null;
+  let cents = null;
+  if (priceText) {
+    const digits = priceText.replace(/\D/g, '');
+    if (digits) cents = parseInt(digits, 10);
+  }
+  return {
+    lot: lotNum,
+    price_cents: cents,
+    description: descText || 'Lote do Leilão',
+    image_url: ''
+  };
+}
+
 function toggleSaveCurrentLot() {
-  const reading = window.currentReading;
+  const reading = getCurrentReadingToSave();
   if (!reading || reading.lot == null) {
     notify('Nenhum lote ativo no momento');
     return;
