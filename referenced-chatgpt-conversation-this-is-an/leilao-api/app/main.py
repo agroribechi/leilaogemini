@@ -122,8 +122,21 @@ async def add_reading(payload: ReadingInput) -> dict[str, Any]:
 
 
 @app.get("/api/auctions/{auction_id}/readings")
-def list_readings(auction_id: str, limit: int = 50) -> list[dict[str, Any]]:
-    return database.get_readings(auction_id, min(limit, 200))
+def list_readings(auction_id: str, limit: int = 50, distinct_by_lot: bool = True) -> list[dict[str, Any]]:
+    readings = database.get_readings(auction_id, min(limit, 500))
+    if distinct_by_lot:
+        seen_lots: set[Any] = set()
+        unique_readings: list[dict[str, Any]] = []
+        for r in readings:
+            lot = r.get("lot")
+            if lot is not None:
+                if lot not in seen_lots:
+                    seen_lots.add(lot)
+                    unique_readings.append(r)
+            else:
+                unique_readings.append(r)
+        return unique_readings
+    return readings
 
 
 @app.post("/api/readings/{reading_id}/corrections", status_code=201)

@@ -193,16 +193,29 @@ function connectRealtime() {
 
 async function loadHistory() {
   try {
-    const readings = await fetch(`${API_URL}/api/auctions/${activeAuctionId}/readings?limit=20`).then(res => res.json());
+    const readings = await fetch(`${API_URL}/api/auctions/${activeAuctionId}/readings?limit=50&distinct_by_lot=true`).then(res => res.json());
     const list = document.querySelector('.history-list');
-    if (list && readings) {
+    if (list && readings && readings.length > 0) {
       list.innerHTML = '';
-      readings.forEach((r, idx) => {
+      
+      const seenLots = new Set();
+      const uniqueReadings = [];
+      for (const r of readings) {
+        const lotKey = r.lot != null ? String(r.lot) : null;
+        if (lotKey && !seenLots.has(lotKey)) {
+          seenLots.add(lotKey);
+          uniqueReadings.push(r);
+        } else if (!lotKey) {
+          uniqueReadings.push(r);
+        }
+      }
+
+      uniqueReadings.forEach((r, idx) => {
         const isCurrent = idx === 0;
         const lotChipCls = isCurrent ? 'lot-chip' : 'lot-chip muted';
-        const timeStatus = isCurrent ? 'Agora · em andamento' : `${new Date(r.captured_at).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})} · lido`;
+        const timeStatus = isCurrent ? 'Em andamento' : `${new Date(r.captured_at).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})} · lido`;
         const article = document.createElement('article');
-        article.innerHTML = `<span class="${lotChipCls}">${r.lot || '--'}</span><div><strong>${r.description || 'Lote sem descrição'}</strong><small>${timeStatus}</small></div><b>${formatCurrency(r.price_cents)}</b>`;
+        article.innerHTML = `<span class="${lotChipCls}">${r.lot != null ? String(r.lot).padStart(3, '0') : '--'}</span><div><strong>${r.description || 'Lote do Leilão'}</strong><small>${timeStatus}</small></div><b>${formatCurrency(r.price_cents)}</b>`;
         list.appendChild(article);
       });
     }
