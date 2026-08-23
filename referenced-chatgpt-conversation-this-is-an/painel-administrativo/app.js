@@ -1,5 +1,5 @@
 const names = { dashboard: 'Visão geral', auctions: 'Leilões', quality: 'Qualidade OCR', subscribers: 'Assinantes', settings: 'Configurações' };
-const API_URL = 'http://127.0.0.1:8000';
+const API_URL = window.API_URL || localStorage.getItem('ARREMATE_API_URL') || (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://127.0.0.1:8000' : `${window.location.protocol}//${window.location.hostname}`);
 let activeAuctionId = 'remate-elite-nelore-2026';
 let activeReading = null;
 let currentAuction = null;

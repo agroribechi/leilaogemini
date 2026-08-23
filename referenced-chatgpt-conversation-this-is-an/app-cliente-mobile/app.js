@@ -2,7 +2,7 @@ const buttons = document.querySelectorAll('[data-go]');
 const screens = document.querySelectorAll('.screen');
 const navItems = document.querySelectorAll('.nav-item');
 const toast = document.querySelector('.toast');
-const API_URL = 'http://127.0.0.1:8000';
+const API_URL = window.API_URL || localStorage.getItem('ARREMATE_API_URL') || (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://127.0.0.1:8000' : `${window.location.protocol}//${window.location.hostname}`);
 let activeAuctionId = 'remate-elite-nelore-2026';
 window.currentAuction = null;
 window.currentReading = null;
