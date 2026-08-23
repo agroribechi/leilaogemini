@@ -40,15 +40,6 @@ function formatCurrency(cents) {
 
 function updateLiveView(data) {
   if (!data) return;
-  
-  // Evita que polling atrasado sobrescreva dados em tempo real mais recentes
-  if (window.currentReading && window.currentReading.captured_at && data.captured_at) {
-    const newTime = new Date(data.captured_at).getTime();
-    const curTime = new Date(window.currentReading.captured_at).getTime();
-    if (!isNaN(newTime) && !isNaN(curTime) && newTime < curTime) {
-      return;
-    }
-  }
 
   window.currentReading = data;
   const lotEl = document.querySelector('#lot-number');
@@ -72,10 +63,11 @@ function updateLiveView(data) {
 
   updateSaveButtonState();
 
-  // Atualiza timeline de lances se for um novo lance
+  // Atualiza timeline de lances no ao vivo se for um lance novo
   const timeline = document.querySelector('.timeline');
-  if (timeline && data.price_cents && data.id !== window.lastTimelineReadingId) {
-    window.lastTimelineReadingId = data.id;
+  const signature = `${data.lot}-${data.price_cents}`;
+  if (timeline && data.price_cents && signature !== window.lastTimelineSignature) {
+    window.lastTimelineSignature = signature;
     const timeStr = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     const li = document.createElement('li');
     li.innerHTML = `<span class="time">${timeStr}</span><div><strong>${formatCurrency(data.price_cents)}</strong><small>${data.description ? data.description : 'Atualização de lance'}</small></div>`;
@@ -243,12 +235,22 @@ async function loadHistory() {
       uniqueReadings.forEach((r, idx) => {
         const isCurrent = idx === 0;
         const lotChipCls = isCurrent ? 'lot-chip' : 'lot-chip muted';
-        const timeStatus = isCurrent ? 'Em andamento' : `${new Date(r.captured_at).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})} · lido`;
+        const timeStatus = isCurrent ? 'Em andamento' : `${new Date(r.captured_at || Date.now()).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})} · lido`;
         const imgUrl = r.image_url || (r.payload && r.payload.image_url);
-        const imgTag = imgUrl ? `<img src="${imgUrl}" style="width:40px; height:40px; object-fit:cover; border-radius:6px; margin-right:10px; border:1px solid #343d34;" />` : '';
+        const imgTag = imgUrl ? `<img src="${imgUrl}" style="width:46px; height:46px; object-fit:cover; border-radius:6px; margin-right:10px; border:1px solid #343d34; flex-shrink:0;" />` : '';
         const article = document.createElement('article');
-        article.style.marginBottom = '8px';
-        article.innerHTML = `<span class="${lotChipCls}">${r.lot != null ? String(r.lot).padStart(3, '0') : '--'}</span><div style="display:flex; align-items:center; flex:1;">${imgTag}<div><strong>${r.description || 'Lote do Leilão'}</strong><small>${timeStatus}</small></div></div><b>${formatCurrency(r.price_cents)}</b>`;
+        article.style.cssText = 'margin-bottom:10px; padding:10px; display:flex; align-items:center; justify-content:space-between; background:rgba(255,255,255,0.03); border-radius:8px; border:1px solid rgba(255,255,255,0.06);';
+        article.innerHTML = `
+          <div style="display:flex; align-items:center; gap:8px; flex:1; min-width:0;">
+            <span class="${lotChipCls}">${r.lot != null ? String(r.lot).padStart(3, '0') : '--'}</span>
+            ${imgTag}
+            <div style="overflow:hidden; text-overflow:ellipsis;">
+              <strong style="display:block; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${r.description || 'Lote do Leilão'}</strong>
+              <small style="color:var(--soft); font-size:11px;">${timeStatus}</small>
+            </div>
+          </div>
+          <b style="color:var(--gold); font-size:15px; margin-left:8px; flex-shrink:0;">${formatCurrency(r.price_cents)}</b>
+        `;
         list.appendChild(article);
       });
     }

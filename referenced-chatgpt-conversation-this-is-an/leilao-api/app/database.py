@@ -37,7 +37,7 @@ def update_auction(auction_id: str, updates: dict[str, Any]) -> dict[str, Any] |
     return response.data[0] if response.data else None
 
 def get_readings(auction_id: str, limit: int = 50) -> list[dict[str, Any]]:
-    response = client.table('readings').select('id, auction_id, captured_at, lot, price_cents, description, confidence').eq('auction_id', auction_id).order('id', desc=True).limit(limit).execute()
+    response = client.table('readings').select('*').eq('auction_id', auction_id).order('id', desc=True).limit(limit).execute()
     return response.data
 
 def get_reading(reading_id: int) -> dict[str, Any] | None:
