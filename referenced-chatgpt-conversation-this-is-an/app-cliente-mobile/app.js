@@ -219,8 +219,12 @@ async function loadHistory() {
     const list = document.querySelector('#full-history-list') || document.querySelector('.history-list');
     if (!list) return;
 
-    const readings = await fetch(`${API_URL}/api/auctions/${activeAuctionId}/readings?limit=50&distinct_by_lot=true`).then(res => res.json());
-    if (readings && readings.length > 0) {
+    const targetId = activeAuctionId || 'remate-elite-nelore-2026';
+    const res = await fetch(`${API_URL}/api/auctions/${targetId}/readings?limit=50&distinct_by_lot=true`);
+    if (!res.ok) return;
+
+    const readings = await res.json();
+    if (Array.isArray(readings) && readings.length > 0) {
       list.innerHTML = '';
       
       const seenLots = new Set();
@@ -240,7 +244,7 @@ async function loadHistory() {
         const lotChipCls = isCurrent ? 'lot-chip' : 'lot-chip muted';
         const timeStatus = isCurrent ? 'Em andamento' : `${new Date(r.captured_at).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})} · lido`;
         const imgUrl = r.image_url || (r.payload && r.payload.image_url);
-        const imgTag = imgUrl ? `<img src="${imgUrl}" style="width:38px; height:38px; object-fit:cover; border-radius:6px; margin-right:10px; border:1px solid #343d34;" />` : '';
+        const imgTag = imgUrl ? `<img src="${imgUrl}" style="width:40px; height:40px; object-fit:cover; border-radius:6px; margin-right:10px; border:1px solid #343d34;" />` : '';
         const article = document.createElement('article');
         article.style.marginBottom = '8px';
         article.innerHTML = `<span class="${lotChipCls}">${r.lot != null ? String(r.lot).padStart(3, '0') : '--'}</span><div style="display:flex; align-items:center; flex:1;">${imgTag}<div><strong>${r.description || 'Lote do Leilão'}</strong><small>${timeStatus}</small></div></div><b>${formatCurrency(r.price_cents)}</b>`;
@@ -527,7 +531,6 @@ initVideoPlayer();
 initWhatsAppButton();
 loadLiveAuction().then(loadHistory);
 
-// Fallback de polling HTTP para dispositivos móveis
 setInterval(async () => {
   if (activeAuctionId) {
     try {
@@ -537,5 +540,9 @@ setInterval(async () => {
         if (readings && readings[0]) updateLiveView(readings[0]);
       }
     } catch (_) {}
+  }
+  const activeScreen = document.querySelector('.screen.active');
+  if (activeScreen && activeScreen.dataset.screen === 'history') {
+    loadHistory();
   }
 }, 3000);
