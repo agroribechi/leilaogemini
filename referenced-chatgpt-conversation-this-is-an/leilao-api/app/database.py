@@ -72,3 +72,20 @@ def create_alert(alert_data: dict[str, Any]) -> dict[str, Any]:
     except Exception as e:
         print("Alert storage info:", e)
         return alert_data
+
+def clear_readings_for_auction(auction_id: str) -> int:
+    try:
+        response = client.table('readings').delete().eq('auction_id', auction_id).execute()
+        return len(response.data) if response.data else 0
+    except Exception as e:
+        print("Clear readings info:", e)
+        return 0
+
+def get_storage_stats() -> dict[str, Any]:
+    try:
+        response = client.table('readings').select('id', count='exact').execute()
+        count = response.count if response.count is not None else (len(response.data) if response.data else 0)
+        estimated_mb = round((count * 1.2) / 1024, 2)
+        return {"total_readings": count, "estimated_mb": estimated_mb}
+    except Exception as e:
+        return {"total_readings": 0, "estimated_mb": 0.0, "error": str(e)}

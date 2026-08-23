@@ -55,7 +55,34 @@
 
         <section class="page" data-page="subscribers"><div class="section-bar"><div><h2>Assinantes</h2><p>Acompanhe os clientes e a situação das assinaturas.</p></div><button class="outline">Baixar relatório</button></div><div class="metrics compact"><article><p>Assinantes ativos</p><strong>1.284</strong><small class="positive">↑ 12,5% neste mês</small></article><article><p>Visualizando agora</p><strong>862</strong><small>67% dos assinantes ativos</small></article><article><p>Renovações próximas</p><strong>36</strong><small>Nos próximos 7 dias</small></article></div></section>
 
-        <section class="page" data-page="settings"><div class="section-bar"><div><h2>Configurações</h2><p>Integrações, permissões e preferências operacionais.</p></div></div><div class="settings-grid"><section class="panel"><h2>Integração de dados</h2><p>O painel está conectado à API local e ao WebSocket em tempo real.</p><span class="status ready"><i></i> Conectado</span></section><section class="panel"><h2>Equipe de operação</h2><p>Defina quais operadores podem publicar e corrigir leituras em cada leilão.</p><button class="outline">Gerenciar equipe</button></section></div></section>
+        <section class="page" data-page="settings">
+          <div class="section-bar"><div><h2>Configurações &amp; Manutenção</h2><p>Gerenciamento de armazenamento, histórico e preferências operacionais.</p></div></div>
+          <div class="settings-grid">
+            <section class="panel">
+              <h2>Integração de dados</h2>
+              <p>O painel está conectado à API em nuvem e ao WebSocket em tempo real.</p>
+              <span class="status ready"><i></i> Conectado</span>
+            </section>
+            
+            <section class="panel highlight-panel">
+              <h2>💾 Gerenciador de Armazenamento</h2>
+              <p>Gerencie a memória e o espaço ocupado por leituras e fotos do leilão.</p>
+              <div class="metrics compact" style="margin:12px 0;">
+                <article><p>Leituras Registradas</p><strong id="storage-readings-count">...</strong></article>
+                <article><p>Espaço Estimado</p><strong id="storage-size-estimate">... MB</strong></article>
+              </div>
+              <div style="display:flex; gap:10px; margin-top:12px;">
+                <button class="outline" id="clear-test-readings-btn">🧹 Limpar Histórico de Testes</button>
+              </div>
+            </section>
+            
+            <section class="panel">
+              <h2>Equipe de operação</h2>
+              <p>Defina quais operadores podem publicar e corrigir leituras em cada leilão.</p>
+              <button class="outline">Gerenciar equipe</button>
+            </section>
+          </div>
+        </section>
       </main>
     </div>
     

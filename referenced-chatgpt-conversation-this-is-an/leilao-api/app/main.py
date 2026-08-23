@@ -154,6 +154,17 @@ async def create_alert(payload: AlertInput) -> dict[str, Any]:
     return {"status": "success", "message": f"Alerta registrado para {payload.phone}", "data": alert}
 
 
+@app.get("/api/system/storage-stats")
+def get_storage_stats() -> dict[str, Any]:
+    return database.get_storage_stats()
+
+
+@app.delete("/api/auctions/{auction_id}/clear-readings")
+def clear_auction_readings(auction_id: str) -> dict[str, Any]:
+    deleted_count = database.clear_readings_for_auction(auction_id)
+    return {"status": "success", "message": f"Removidas {deleted_count} leituras do leilão {auction_id}", "deleted_count": deleted_count}
+
+
 @app.post("/api/readings/{reading_id}/corrections", status_code=201)
 async def correct_reading(reading_id: int, payload: CorrectionInput) -> dict[str, Any]:
     reading = database.get_reading(reading_id)

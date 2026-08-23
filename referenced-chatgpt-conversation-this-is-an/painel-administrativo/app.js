@@ -352,5 +352,34 @@ document.querySelector('#save-auction')?.addEventListener('click', async (event)
   }
 });
 
+async function updateStorageStats() {
+  try {
+    const res = await fetch(`${API_URL}/api/system/storage-stats`);
+    if (res.ok) {
+      const stats = await res.json();
+      const countEl = document.querySelector('#storage-readings-count');
+      const sizeEl = document.querySelector('#storage-size-estimate');
+      if (countEl) countEl.textContent = String(stats.total_readings || 0);
+      if (sizeEl) sizeEl.textContent = `${stats.estimated_mb || 0} MB`;
+    }
+  } catch (_) {}
+}
+
+document.querySelector('#clear-test-readings-btn')?.addEventListener('click', async () => {
+  if (confirm(`Tem certeza que deseja limpar o histórico de testes do leilão "${activeAuctionId}"?`)) {
+    try {
+      const res = await fetch(`${API_URL}/api/auctions/${activeAuctionId}/clear-readings`, { method: 'DELETE' });
+      if (res.ok) {
+        notify('Histórico de leituras do leilão limpo com sucesso!');
+        loadInitialData();
+        updateStorageStats();
+      }
+    } catch (_) {
+      notify('Erro ao conectar à API');
+    }
+  }
+});
+
 // Inicialização
 loadInitialData();
+updateStorageStats();
