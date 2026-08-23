@@ -92,7 +92,38 @@
         <button class="nav-item" data-go="profile"><span>◌</span>Perfil</button>
       </nav>
     </main>
+    <!-- Modal de Alerta de Palavras-Chave -->
+    <div id="alert-modal" class="modal-overlay" style="display:none;">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3>🔔 Criar Alerta por WhatsApp</h3>
+          <button type="button" id="close-modal-btn" class="close-btn">&times;</button>
+        </div>
+        <p class="modal-sub">Receba avisos no WhatsApp quando lotes das suas categorias preferidas entrarem em pista.</p>
+        
+        <label class="modal-label">Categorias do Leilão:</label>
+        <div class="keyword-chips">
+          <button type="button" class="chip active" data-kw="Novilhas">Novilhas</button>
+          <button type="button" class="chip active" data-kw="Nelore">Nelore</button>
+          <button type="button" class="chip" data-kw="Machos">Machos</button>
+          <button type="button" class="chip" data-kw="Bezerros">Bezerros</button>
+          <button type="button" class="chip" data-kw="Matrizes">Matrizes</button>
+          <button type="button" class="chip" data-kw="Angus">Angus</button>
+          <button type="button" class="chip" data-kw="Equinos">Equinos</button>
+        </div>
+
+        <input type="text" id="alert-keywords-input" class="modal-input" placeholder="Ou digite palavras-chave (ex: Novilhas, Nelore)" value="Novilhas, Nelore" />
+
+        <label class="modal-label">Seu WhatsApp (com DDD):</label>
+        <input type="tel" id="alert-phone-input" class="modal-input" placeholder="(62) 99999-9999" />
+
+        <div class="modal-actions">
+          <button type="button" id="confirm-alert-btn" class="gold-button full-width">Ativar Alerta no WhatsApp</button>
+        </div>
+      </div>
+    </div>
+
     <div class="toast" role="status"></div>
-    <script src="app.js?v=9.0"></script>
+    <script src="app.js?v=10.0"></script>
   </body>
 </html>

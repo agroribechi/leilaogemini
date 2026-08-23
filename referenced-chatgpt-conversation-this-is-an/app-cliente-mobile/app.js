@@ -286,41 +286,67 @@ if (saveBtn) {
   saveBtn.addEventListener('click', () => notify('Lote salvo nos seus favoritos!'));
 }
 
+// Gerenciamento do Modal de Alerta
+const alertModal = document.querySelector('#alert-modal');
 const alertBtn = document.querySelector('#alert-button');
-if (alertBtn) {
-  alertBtn.addEventListener('click', async () => {
-    const lotDesc = window.currentReading?.description || 'lotes';
-    const defaultKeywords = ['Novilhas', 'Machos', 'Bezerros', 'Matrizes', 'Nelore', 'Angus', 'Equinos'];
-    
-    const selectedKw = prompt(
-      `Digite as palavras-chave ou categorias que você deseja monitorar no leilão (separadas por vírgula):\nExemplos: ${defaultKeywords.join(', ')}`,
-      'Novilhas, Nelore'
-    );
-    
-    if (!selectedKw || selectedKw.trim() === '') return;
-    
-    const currentPhone = localStorage.getItem('arremate_user_phone') || '';
-    const phone = prompt(`Digite seu WhatsApp (com DDD) para receber avisos quando ${selectedKw.trim()} entrarem em pista:`, currentPhone);
-    
-    if (phone && phone.trim() !== '') {
-      const cleanPhone = phone.trim();
-      const keywordsList = selectedKw.split(',').map(k => k.trim()).filter(Boolean);
-      localStorage.setItem('arremate_user_phone', cleanPhone);
-      
-      try {
-        await fetch(`${API_URL}/api/alerts`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            auction_id: activeAuctionId,
-            phone: cleanPhone,
-            keywords: keywordsList
-          })
-        });
-      } catch (_) {}
-      
-      notify(`🔔 Alerta registrado no WhatsApp para (${keywordsList.join(', ')})!`);
+const closeModalBtn = document.querySelector('#close-modal-btn');
+const confirmAlertBtn = document.querySelector('#confirm-alert-btn');
+const keywordsInput = document.querySelector('#alert-keywords-input');
+const phoneInput = document.querySelector('#alert-phone-input');
+
+function openAlertModal() {
+  if (!alertModal) return;
+  const savedPhone = localStorage.getItem('arremate_user_phone') || '';
+  if (phoneInput && savedPhone) phoneInput.value = savedPhone;
+  alertModal.style.display = 'flex';
+}
+
+function closeAlertModal() {
+  if (alertModal) alertModal.style.display = 'none';
+}
+
+if (alertBtn) alertBtn.addEventListener('click', openAlertModal);
+if (closeModalBtn) closeModalBtn.addEventListener('click', closeAlertModal);
+if (alertModal) {
+  alertModal.addEventListener('click', (e) => {
+    if (e.target === alertModal) closeAlertModal();
+  });
+}
+
+// Chips interativos de categoria
+document.querySelectorAll('.keyword-chips .chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    chip.classList.toggle('active');
+    const activeChips = Array.from(document.querySelector('.keyword-chips').querySelectorAll('.chip.active')).map(c => c.dataset.kw);
+    if (keywordsInput) keywordsInput.value = activeChips.join(', ');
+  });
+});
+
+if (confirmAlertBtn) {
+  confirmAlertBtn.addEventListener('click', async () => {
+    const rawKw = keywordsInput ? keywordsInput.value.trim() : '';
+    const phone = phoneInput ? phoneInput.value.trim() : '';
+    if (!phone) {
+      alert('Por favor, informe seu WhatsApp com DDD para receber o alerta.');
+      return;
     }
+    const keywordsList = rawKw ? rawKw.split(',').map(k => k.trim()).filter(Boolean) : ['Geral'];
+    localStorage.setItem('arremate_user_phone', phone);
+    
+    try {
+      await fetch(`${API_URL}/api/alerts`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          auction_id: activeAuctionId,
+          phone: phone,
+          keywords: keywordsList
+        })
+      });
+    } catch (_) {}
+
+    closeAlertModal();
+    notify(`🔔 Alerta de (${keywordsList.join(', ')}) ativado no WhatsApp!`);
   });
 }
 
