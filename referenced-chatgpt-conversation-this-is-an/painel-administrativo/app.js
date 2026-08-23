@@ -1,5 +1,16 @@
 const names = { dashboard: 'Visão geral', auctions: 'Leilões', quality: 'Qualidade OCR', subscribers: 'Assinantes', settings: 'Configurações' };
-const API_URL = window.API_URL || localStorage.getItem('ARREMATE_API_URL') || (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://127.0.0.1:8000' : `${window.location.protocol}//${window.location.hostname}`);
+function getApiUrl() {
+  if (window.API_URL) return window.API_URL;
+  if (localStorage.getItem('ARREMATE_API_URL')) return localStorage.getItem('ARREMATE_API_URL');
+  const host = window.location.hostname;
+  const proto = window.location.protocol;
+  if (host === 'localhost' || host === '127.0.0.1') return 'http://127.0.0.1:8000';
+  if (host.includes('-admin.') || host.includes('-mobile.')) {
+    return `${proto}//${host.replace('-admin.', '-api.').replace('-mobile.', '-api.')}`;
+  }
+  return `${proto}//${host}`;
+}
+const API_URL = getApiUrl();
 let activeAuctionId = 'remate-elite-nelore-2026';
 let activeReading = null;
 let currentAuction = null;
