@@ -71,6 +71,12 @@ function addRecentEvent(reading) {
 }
 
 function applyReading(reading) {
+  if (!reading) return;
+  if (activeReading && activeReading.captured_at && reading.captured_at) {
+    if (new Date(reading.captured_at) < new Date(activeReading.captured_at)) {
+      return;
+    }
+  }
   activeReading = reading;
   const lotEl = document.querySelector('#current-lot');
   const priceEl = document.querySelector('#current-price');

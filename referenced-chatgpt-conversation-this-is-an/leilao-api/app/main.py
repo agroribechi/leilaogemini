@@ -96,18 +96,49 @@ def list_auctions() -> list[dict[str, Any]]:
     return database.get_auctions()
 
 
-@app.post("/api/auctions", status_code=201)
-def add_auction(payload: AuctionInput) -> dict[str, Any]:
-    auction = {
-        "id": f"auction-{uuid4().hex[:10]}",
-        "name": payload.name,
-        "location": payload.location,
-        "youtube_url": payload.youtube_url,
-        "whatsapp_number": getattr(payload, 'whatsapp_number', ''),
-        "status": "scheduled",
-        "created_at": datetime.now(timezone.utc).isoformat(),
+@app.get("/api/auctions/active")
+def get_active_auction() -> dict[str, Any]:
+    auctions = database.get_auctions()
+    live = next((a for a in auctions if a.get("status") == "live"), None)
+    if live:
+        return live
+    if auctions:
+        return auctions[0]
+    return {
+        "id": "auction-demo",
+        "name": "Remate Elite Nelore",
+        "location": "Uberaba · MG",
+        "status": "live",
+        "youtube_url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
     }
-    return database.create_auction(auction)
+
+
+@app.get("/api/auctions/{auction_id}")
+def get_auction(auction_id: str) -> dict[str, Any]:
+    if auction_id == "active":
+        return get_active_auction()
+    auction = database.get_auction(auction_id)
+    if not auction:
+        raise HTTPException(status_code=404, detail="Leilão não encontrado")
+    return auction
+
+
+@app.get("/api/auctions/{auction_id}/latest")
+def get_latest_reading(auction_id: str) -> dict[str, Any]:
+    target_id = auction_id
+    if auction_id == "active":
+        active = get_active_auction()
+        target_id = active.get("id", "auction-demo")
+    readings = database.get_readings(target_id, limit=1)
+    if readings:
+        return readings[0]
+    return {
+        "auction_id": target_id,
+        "captured_at": datetime.now(timezone.utc).isoformat(),
+        "lot": 47,
+        "price_cents": 1850000,
+        "description": "20 novilhas Nelore prenhes"
+    }
 
 
 @app.patch("/api/auctions/{auction_id}")

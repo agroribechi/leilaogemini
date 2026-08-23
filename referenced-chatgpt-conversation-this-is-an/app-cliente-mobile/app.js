@@ -38,6 +38,14 @@ function formatCurrency(cents) {
 
 function updateLiveView(data) {
   if (!data) return;
+  
+  // Evita que polling atrasado sobrescreva dados em tempo real mais recentes
+  if (window.currentReading && window.currentReading.captured_at && data.captured_at) {
+    if (new Date(data.captured_at) < new Date(window.currentReading.captured_at)) {
+      return;
+    }
+  }
+
   window.currentReading = data;
   const lotEl = document.querySelector('#lot-number');
   const priceEl = document.querySelector('#price');
