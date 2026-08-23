@@ -39,6 +39,15 @@ class ReadingInput(BaseModel):
     raw_lot: str = ""
     raw_price: str = ""
     raw_description: str = ""
+    confidence: float = Field(default=0.0, ge=0.0, le=100.0)
+
+
+class AlertInput(BaseModel):
+    auction_id: str
+    phone: str
+    keywords: list[str] = Field(default_factory=list)
+    max_price_cents: int | None = None
+    raw_description: str = ""
     confidence: float | None = Field(default=None, ge=0, le=100)
 
 
@@ -137,6 +146,12 @@ def list_readings(auction_id: str, limit: int = 50, distinct_by_lot: bool = True
                 unique_readings.append(r)
         return unique_readings
     return readings
+
+
+@app.post("/api/alerts", status_code=201)
+async def create_alert(payload: AlertInput) -> dict[str, Any]:
+    alert = database.create_alert(payload.model_dump())
+    return {"status": "success", "message": f"Alerta registrado para {payload.phone}", "data": alert}
 
 
 @app.post("/api/readings/{reading_id}/corrections", status_code=201)

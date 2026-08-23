@@ -59,3 +59,16 @@ def create_reading(reading: dict[str, Any]) -> dict[str, Any]:
 def create_correction(correction: dict[str, Any]) -> dict[str, Any]:
     response = client.table('corrections').insert(correction).execute()
     return response.data[0] if response.data else correction
+
+def create_alert(alert_data: dict[str, Any]) -> dict[str, Any]:
+    try:
+        response = client.table('alerts').insert({
+            "auction_id": alert_data.get("auction_id"),
+            "phone": alert_data.get("phone"),
+            "keywords": alert_data.get("keywords", []),
+            "max_price_cents": alert_data.get("max_price_cents")
+        }).execute()
+        return response.data[0] if response.data else alert_data
+    except Exception as e:
+        print("Alert storage info:", e)
+        return alert_data

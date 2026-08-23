@@ -288,13 +288,38 @@ if (saveBtn) {
 
 const alertBtn = document.querySelector('#alert-button');
 if (alertBtn) {
-  alertBtn.addEventListener('click', () => {
-    const lotNum = window.currentReading?.lot ? `Lote ${window.currentReading.lot}` : 'lotes deste leilão';
+  alertBtn.addEventListener('click', async () => {
+    const lotDesc = window.currentReading?.description || 'lotes';
+    const defaultKeywords = ['Novilhas', 'Machos', 'Bezerros', 'Matrizes', 'Nelore', 'Angus', 'Equinos'];
+    
+    const selectedKw = prompt(
+      `Digite as palavras-chave ou categorias que você deseja monitorar no leilão (separadas por vírgula):\nExemplos: ${defaultKeywords.join(', ')}`,
+      'Novilhas, Nelore'
+    );
+    
+    if (!selectedKw || selectedKw.trim() === '') return;
+    
     const currentPhone = localStorage.getItem('arremate_user_phone') || '';
-    const phone = prompt(`Digite seu WhatsApp (com DDD) para receber alertas automáticos quando houver novidades para o ${lotNum}:`, currentPhone);
+    const phone = prompt(`Digite seu WhatsApp (com DDD) para receber avisos quando ${selectedKw.trim()} entrarem em pista:`, currentPhone);
+    
     if (phone && phone.trim() !== '') {
-      localStorage.setItem('arremate_user_phone', phone.trim());
-      notify(`🔔 Alerta ativado no WhatsApp para ${phone.trim()}!`);
+      const cleanPhone = phone.trim();
+      const keywordsList = selectedKw.split(',').map(k => k.trim()).filter(Boolean);
+      localStorage.setItem('arremate_user_phone', cleanPhone);
+      
+      try {
+        await fetch(`${API_URL}/api/alerts`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            auction_id: activeAuctionId,
+            phone: cleanPhone,
+            keywords: keywordsList
+          })
+        });
+      } catch (_) {}
+      
+      notify(`🔔 Alerta registrado no WhatsApp para (${keywordsList.join(', ')})!`);
     }
   });
 }
