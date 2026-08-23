@@ -31,6 +31,7 @@ class Reading:
     captured_at: str
     auction_id: str | None = None
     auction_name: str | None = None
+    image_url: str | None = None
 
     @classmethod
     def now(cls, **kwargs: Any) -> "Reading":

@@ -40,6 +40,7 @@ class ReadingInput(BaseModel):
     raw_price: str = ""
     raw_description: str = ""
     confidence: float = Field(default=0.0, ge=0.0, le=100.0)
+    image_url: str | None = None
 
 
 class AlertInput(BaseModel):

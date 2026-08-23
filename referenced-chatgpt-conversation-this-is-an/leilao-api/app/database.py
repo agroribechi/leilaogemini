@@ -45,16 +45,22 @@ def get_reading(reading_id: int) -> dict[str, Any] | None:
     return response.data[0] if response.data else None
 
 def create_reading(reading: dict[str, Any]) -> dict[str, Any]:
-    response = client.table('readings').insert({
+    record = {
         "auction_id": reading["auction_id"],
         "captured_at": reading["captured_at"],
         "lot": reading.get("lot"),
         "price_cents": reading.get("price_cents"),
         "description": reading.get("description", ""),
         "confidence": reading.get("confidence"),
+        "image_url": reading.get("image_url"),
         "payload": reading
-    }).execute()
-    return response.data[0] if response.data else reading
+    }
+    try:
+        response = client.table('readings').insert(record).execute()
+        return response.data[0] if response.data else reading
+    except Exception as e:
+        print("Insert reading info:", e)
+        return reading
 
 def create_correction(correction: dict[str, Any]) -> dict[str, Any]:
     response = client.table('corrections').insert(correction).execute()
