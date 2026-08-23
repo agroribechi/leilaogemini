@@ -28,16 +28,20 @@ def normalize_lot(value: str) -> int | None:
 
 
 def normalize_price_cents(value: str) -> int | None:
-    text = value.upper().replace("O", "0")
+    if not value:
+        return None
+    text = value.upper().replace("O", "0").replace("Q", "0")
     text = re.sub(r"[^0-9,\.]", "", text)
     if not text:
         return None
-    # Em PT-BR, ponto normalmente separa milhares e vírgula separa centavos.
-    if "," in text:
-        integer, decimals = text.rsplit(",", 1)
-        integer = integer.replace(".", "") or "0"
-        return int(integer) * 100 + int((decimals + "00")[:2])
-    digits = text.replace(".", "")
+        
+    # Se houver 2 dígitos após o último separador (ponto ou vírgula), ex: 18.500.00 ou 18.500,00
+    if re.search(r"[,\.]\d{2}$", text):
+        main, decimals = text[:-3], text[-2:]
+        main_digits = re.sub(r"[^\d]", "", main) or "0"
+        return int(main_digits) * 100 + int(decimals)
+        
+    digits = re.sub(r"[^\d]", "", text)
     return int(digits) * 100 if digits else None
 
 

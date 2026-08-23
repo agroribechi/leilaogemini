@@ -49,6 +49,14 @@ function updateLiveView(data) {
   if (priceEl && data.price_cents !== undefined && data.price_cents !== null) priceEl.textContent = formatCurrency(data.price_cents);
   if (descEl && data.description) descEl.textContent = data.description;
 
+  if (data.image_url) {
+    document.querySelectorAll('.cattle-image').forEach(el => {
+      el.style.backgroundImage = `linear-gradient(0deg, rgba(25, 36, 21, 0.5), rgba(196, 169, 106, 0.1)), url('${data.image_url}')`;
+      el.style.backgroundSize = 'cover';
+      el.style.backgroundPosition = 'center';
+    });
+  }
+
   // Atualiza timeline de lances se for um novo lance
   const timeline = document.querySelector('.timeline');
   if (timeline && data.price_cents && data.id !== window.lastTimelineReadingId) {

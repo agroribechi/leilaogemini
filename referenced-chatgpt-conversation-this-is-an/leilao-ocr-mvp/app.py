@@ -223,7 +223,7 @@ class AuctionApp(tk.Tk):
             
             img_b64 = None
             try:
-                target_region = self.regions.get("description") or self.regions.get("lot")
+                target_region = self.regions.get("video") or self.regions.get("description") or self.regions.get("lot")
                 if target_region:
                     crop = self.capture.grab(target_region)
                     img_b64 = frame_to_base64(crop)
