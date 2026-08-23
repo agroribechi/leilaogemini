@@ -105,11 +105,11 @@ def get_active_auction() -> dict[str, Any]:
     if auctions:
         return auctions[0]
     return {
-        "id": "auction-demo",
+        "id": "remate-elite-nelore-2026",
         "name": "Remate Elite Nelore",
         "location": "Uberaba · MG",
         "status": "live",
-        "youtube_url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+        "youtube_url": "https://www.youtube.com/watch?v=yG9urdYMH6w&t=2714s"
     }
 
 
