@@ -24,6 +24,7 @@ function goTo(name) {
   navItems.forEach((item) => item.classList.toggle('active', item.dataset.go === name));
   window.scrollTo({ top: 0, behavior: 'smooth' });
   if (name === 'favorites') renderFavorites();
+  if (name === 'history') loadHistory();
 }
 
 function notify(message) {
@@ -215,9 +216,11 @@ function connectRealtime() {
 
 async function loadHistory() {
   try {
+    const list = document.querySelector('#full-history-list') || document.querySelector('.history-list');
+    if (!list) return;
+
     const readings = await fetch(`${API_URL}/api/auctions/${activeAuctionId}/readings?limit=50&distinct_by_lot=true`).then(res => res.json());
-    const list = document.querySelector('.history-list');
-    if (list && readings && readings.length > 0) {
+    if (readings && readings.length > 0) {
       list.innerHTML = '';
       
       const seenLots = new Set();
@@ -237,9 +240,10 @@ async function loadHistory() {
         const lotChipCls = isCurrent ? 'lot-chip' : 'lot-chip muted';
         const timeStatus = isCurrent ? 'Em andamento' : `${new Date(r.captured_at).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})} · lido`;
         const imgUrl = r.image_url || (r.payload && r.payload.image_url);
-        const imgTag = imgUrl ? `<img src="${imgUrl}" style="width:36px; height:36px; object-fit:cover; border-radius:6px; margin-right:8px;" />` : '';
+        const imgTag = imgUrl ? `<img src="${imgUrl}" style="width:38px; height:38px; object-fit:cover; border-radius:6px; margin-right:10px; border:1px solid #343d34;" />` : '';
         const article = document.createElement('article');
-        article.innerHTML = `<span class="${lotChipCls}">${r.lot != null ? String(r.lot).padStart(3, '0') : '--'}</span><div style="display:flex; align-items:center;">${imgTag}<div><strong>${r.description || 'Lote do Leilão'}</strong><small>${timeStatus}</small></div></div><b>${formatCurrency(r.price_cents)}</b>`;
+        article.style.marginBottom = '8px';
+        article.innerHTML = `<span class="${lotChipCls}">${r.lot != null ? String(r.lot).padStart(3, '0') : '--'}</span><div style="display:flex; align-items:center; flex:1;">${imgTag}<div><strong>${r.description || 'Lote do Leilão'}</strong><small>${timeStatus}</small></div></div><b>${formatCurrency(r.price_cents)}</b>`;
         list.appendChild(article);
       });
     }
