@@ -37,18 +37,22 @@ function formatCurrency(cents) {
 }
 
 function updateLiveView(data) {
+  if (!data) return;
   window.currentReading = data;
   const lotEl = document.querySelector('#lot-number');
   const priceEl = document.querySelector('#price');
   const descEl = document.querySelector('#description');
+  const homeCardLot = document.querySelector('#home-card-lot');
 
   if (lotEl && data.lot !== undefined && data.lot !== null) lotEl.textContent = String(data.lot);
+  if (homeCardLot && data.lot !== undefined && data.lot !== null) homeCardLot.textContent = `Lote ${String(data.lot).padStart(3, '0')}`;
   if (priceEl && data.price_cents !== undefined && data.price_cents !== null) priceEl.textContent = formatCurrency(data.price_cents);
   if (descEl && data.description) descEl.textContent = data.description;
 
-  // Atualiza timeline de lances
+  // Atualiza timeline de lances se for um novo lance
   const timeline = document.querySelector('.timeline');
-  if (timeline && data.price_cents) {
+  if (timeline && data.price_cents && data.id !== window.lastTimelineReadingId) {
+    window.lastTimelineReadingId = data.id;
     const timeStr = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     const li = document.createElement('li');
     li.innerHTML = `<span class="time">${timeStr}</span><div><strong>${formatCurrency(data.price_cents)}</strong><small>${data.description ? data.description : 'Atualização de lance'}</small></div>`;
@@ -275,3 +279,16 @@ document.querySelectorAll('.filter').forEach((filter) => filter.addEventListener
 initVideoPlayer();
 initWhatsAppButton();
 loadLiveAuction().then(loadHistory);
+
+// Fallback de polling HTTP para dispositivos móveis
+setInterval(async () => {
+  if (activeAuctionId) {
+    try {
+      const res = await fetch(`${API_URL}/api/auctions/${activeAuctionId}/readings?limit=1`);
+      if (res.ok) {
+        const readings = await res.json();
+        if (readings && readings[0]) updateLiveView(readings[0]);
+      }
+    } catch (_) {}
+  }
+}, 3000);
