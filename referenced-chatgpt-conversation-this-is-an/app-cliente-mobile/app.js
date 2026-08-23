@@ -268,12 +268,28 @@ document.querySelector('.favorite').addEventListener('click', (event) => {
   event.currentTarget.textContent = event.currentTarget.textContent === '\u2661' ? '\u2665' : '\u2661';
   notify(event.currentTarget.textContent === '\u2665' ? 'Lote adicionado aos salvos' : 'Lote removido dos salvos');
 });
-document.querySelector('#save-button').addEventListener('click', () => notify('Lote salvo nos seus favoritos'));
-document.querySelector('#alert-button').addEventListener('click', () => notify('Alerta de novo lance ativado'));
+const saveBtn = document.querySelector('#save-button');
+if (saveBtn) {
+  saveBtn.addEventListener('click', () => notify('Lote salvo nos seus favoritos!'));
+}
+
+const alertBtn = document.querySelector('#alert-button');
+if (alertBtn) {
+  alertBtn.addEventListener('click', () => {
+    const lotNum = window.currentReading?.lot ? `Lote ${window.currentReading.lot}` : 'lotes deste leilão';
+    const currentPhone = localStorage.getItem('arremate_user_phone') || '';
+    const phone = prompt(`Digite seu WhatsApp (com DDD) para receber alertas automáticos quando houver novidades para o ${lotNum}:`, currentPhone);
+    if (phone && phone.trim() !== '') {
+      localStorage.setItem('arremate_user_phone', phone.trim());
+      notify(`🔔 Alerta ativado no WhatsApp para ${phone.trim()}!`);
+    }
+  });
+}
+
 document.querySelectorAll('.filter').forEach((filter) => filter.addEventListener('click', () => {
   document.querySelectorAll('.filter').forEach((item) => item.classList.remove('active-filter'));
   filter.classList.add('active-filter');
-  notify(`Filtro: ${filter.textContent}`);
+  notify(`Filtro selecionado: ${filter.textContent}`);
 }));
 
 initVideoPlayer();
