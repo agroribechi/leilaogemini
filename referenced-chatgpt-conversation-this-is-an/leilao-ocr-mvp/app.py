@@ -19,6 +19,7 @@ from leilao_ocr.ai import refine_with_gemini
 import threading
 import io
 import base64
+import time
 
 def frame_to_base64(img, max_size=(500, 300), quality=65) -> str:
     thumb = img.copy()
@@ -128,6 +129,7 @@ class AuctionApp(tk.Tk):
         self.auction_var = tk.StringVar()
         self.select_initial_auction()
         self.running = False; self.last_signature = None; self.candidate = None; self.candidate_count = 0
+        self.active_lot = None; self.lot_change_time = 0; self.lot_image_count = 0
         self.status = tk.StringVar(value="Calibre as regiões antes de iniciar.")
         self.current = {name: tk.StringVar(value="—") for name in ("lot", "price", "description")}
         self.build_ui(); self.refresh_history()
@@ -221,17 +223,31 @@ class AuctionApp(tk.Tk):
             raw = {name: self.reader.read(self.capture.grab(self.regions[name]), name) for name in ("lot", "price", "description")}
             auction = self.selected_auction()
             
+            lot_num = normalize_lot(raw["lot"])
+            current_time = time.time()
+            
+            # Se mudou o lote, reseta o temporizador e libera nova captura de imagem
+            if lot_num is not None and lot_num != self.active_lot:
+                self.active_lot = lot_num
+                self.lot_change_time = current_time
+                self.lot_image_count = 0
+            
+            # Captura a foto APENAS 1 vez por lote, após passados pelo menos 4 segundos da troca de lote
             img_b64 = None
-            try:
-                target_region = self.regions.get("video") or self.regions.get("description") or self.regions.get("lot")
-                if target_region:
-                    crop = self.capture.grab(target_region)
-                    img_b64 = frame_to_base64(crop)
-            except Exception:
-                pass
+            time_since_change = current_time - self.lot_change_time if self.lot_change_time else 0
+            
+            if lot_num is not None and self.lot_image_count < 1 and time_since_change >= 4:
+                try:
+                    target_region = self.regions.get("video") or self.regions.get("description") or self.regions.get("lot")
+                    if target_region:
+                        crop = self.capture.grab(target_region)
+                        img_b64 = frame_to_base64(crop)
+                        self.lot_image_count += 1
+                except Exception:
+                    pass
 
             reading = Reading.now(
-                lot=normalize_lot(raw["lot"]),
+                lot=lot_num,
                 price_cents=normalize_price_cents(raw["price"]),
                 description=normalize_description(raw["description"]),
                 raw_lot=raw["lot"],
