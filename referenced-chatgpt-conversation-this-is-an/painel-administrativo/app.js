@@ -93,6 +93,11 @@ function applyReading(reading) {
 
   document.querySelectorAll('#price').forEach((element) => { element.textContent = priceText; });
   document.querySelectorAll('#lot-number').forEach((element) => { element.textContent = lotText; });
+
+  const previewBox = document.querySelector('.capture-preview');
+  if (previewBox && reading.image_url) {
+    previewBox.innerHTML = `<span>FRAME CAPTURADO</span><img src="${reading.image_url}" style="width:100%; max-height:160px; object-fit:contain; border-radius:6px; margin-top:8px;" />`;
+  }
 }
 
 function updateAuctionDisplay(auction) {

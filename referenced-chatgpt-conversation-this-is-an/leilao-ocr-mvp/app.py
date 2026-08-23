@@ -17,6 +17,15 @@ from leilao_ocr.operations import AuctionStore, OperationStore
 from leilao_ocr.publisher import publisher_from_environment
 from leilao_ocr.ai import refine_with_gemini
 import threading
+import io
+import base64
+
+def frame_to_base64(img, max_size=(500, 300), quality=65) -> str:
+    thumb = img.copy()
+    thumb.thumbnail(max_size)
+    buffer = io.BytesIO()
+    thumb.save(buffer, format="JPEG", quality=quality)
+    return "data:image/jpeg;base64," + base64.b64encode(buffer.getvalue()).decode("utf-8")
 
 ROOT = Path(__file__).parent
 DATA = ROOT / "data"
@@ -211,7 +220,27 @@ class AuctionApp(tk.Tk):
         try:
             raw = {name: self.reader.read(self.capture.grab(self.regions[name]), name) for name in ("lot", "price", "description")}
             auction = self.selected_auction()
-            reading = Reading.now(lot=normalize_lot(raw["lot"]), price_cents=normalize_price_cents(raw["price"]), description=normalize_description(raw["description"]), raw_lot=raw["lot"], raw_price=raw["price"], raw_description=raw["description"], auction_id=auction["id"], auction_name=auction["name"])
+            
+            img_b64 = None
+            try:
+                target_region = self.regions.get("description") or self.regions.get("lot")
+                if target_region:
+                    crop = self.capture.grab(target_region)
+                    img_b64 = frame_to_base64(crop)
+            except Exception:
+                pass
+
+            reading = Reading.now(
+                lot=normalize_lot(raw["lot"]),
+                price_cents=normalize_price_cents(raw["price"]),
+                description=normalize_description(raw["description"]),
+                raw_lot=raw["lot"],
+                raw_price=raw["price"],
+                raw_description=raw["description"],
+                auction_id=auction["id"],
+                auction_name=auction["name"],
+                image_url=img_b64
+            )
             self.show(reading); self.process(reading)
         except Exception as error:
             self.status.set(f"Erro de OCR: {error}")

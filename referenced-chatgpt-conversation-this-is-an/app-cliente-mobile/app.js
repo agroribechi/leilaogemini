@@ -214,8 +214,9 @@ async function loadHistory() {
         const isCurrent = idx === 0;
         const lotChipCls = isCurrent ? 'lot-chip' : 'lot-chip muted';
         const timeStatus = isCurrent ? 'Em andamento' : `${new Date(r.captured_at).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})} · lido`;
+        const imgTag = r.image_url ? `<img src="${r.image_url}" style="width:36px; height:36px; object-fit:cover; border-radius:6px; margin-right:8px;" />` : '';
         const article = document.createElement('article');
-        article.innerHTML = `<span class="${lotChipCls}">${r.lot != null ? String(r.lot).padStart(3, '0') : '--'}</span><div><strong>${r.description || 'Lote do Leilão'}</strong><small>${timeStatus}</small></div><b>${formatCurrency(r.price_cents)}</b>`;
+        article.innerHTML = `<span class="${lotChipCls}">${r.lot != null ? String(r.lot).padStart(3, '0') : '--'}</span><div style="display:flex; align-items:center;">${imgTag}<div><strong>${r.description || 'Lote do Leilão'}</strong><small>${timeStatus}</small></div></div><b>${formatCurrency(r.price_cents)}</b>`;
         list.appendChild(article);
       });
     }
