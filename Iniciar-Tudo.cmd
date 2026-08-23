@@ -53,7 +53,7 @@ set /p INICIAR_OCR="Deseja iniciar o Capturador Leilao OCR agora? (S/N): "
 if /i "%INICIAR_OCR%"=="S" (
     echo.
     echo Iniciando Capturador OCR conectado a API...
-    start "Arremate - Capturador OCR" cmd /c "cd /d "%BASE_DIR%\leilao-ocr-mvp" && set LEILAO_API_URL=http://127.0.0.1:8000 && "%PYTHON_OCR%" app.py --tesseract "C:\Program Files\Tesseract-OCR\tesseract.exe""
+    start "Arremate - Capturador OCR" cmd /c "cd /d "%BASE_DIR%\leilao-ocr-mvp" && set LEILAO_API_URL=https://agrous-api.rfhelf.easypanel.host && "%PYTHON_OCR%" app.py --tesseract "C:\Program Files\Tesseract-OCR\tesseract.exe""
 )
 
 echo.

@@ -4,7 +4,7 @@ setlocal
 cd /d "%~dp0"
 set "PYTHON=%CD%\.venv\Scripts\python.exe"
 set "TESSERACT=C:\Program Files\Tesseract-OCR\tesseract.exe"
-set "LEILAO_API_URL=http://127.0.0.1:8000"
+set "LEILAO_API_URL=https://agrous-api.rfhelf.easypanel.host"
 
 if not exist "%PYTHON%" (
     echo Nao encontrei o ambiente Python do projeto.
