@@ -57,12 +57,20 @@ function updateLiveView(data) {
   if (priceEl && data.price_cents !== undefined && data.price_cents !== null) priceEl.textContent = formatCurrency(data.price_cents);
   if (descEl && data.description) descEl.textContent = data.description;
 
-  if (data.image_url) {
+  const imageUrl = data.image_url || (data.payload && data.payload.image_url);
+  if (imageUrl) {
     document.querySelectorAll('.cattle-image').forEach(el => {
-      el.style.backgroundImage = `linear-gradient(0deg, rgba(25, 36, 21, 0.5), rgba(196, 169, 106, 0.1)), url('${data.image_url}')`;
+      el.style.backgroundImage = `linear-gradient(0deg, rgba(25, 36, 21, 0.5), rgba(196, 169, 106, 0.1)), url('${imageUrl}')`;
       el.style.backgroundSize = 'cover';
       el.style.backgroundPosition = 'center';
     });
+
+    const photoContainer = document.querySelector('#captured-lot-photo-container');
+    const photoImg = document.querySelector('#captured-lot-photo');
+    if (photoContainer && photoImg) {
+      photoImg.src = imageUrl;
+      photoContainer.style.display = 'block';
+    }
   }
 
   // Atualiza timeline de lances se for um novo lance
@@ -230,7 +238,8 @@ async function loadHistory() {
         const isCurrent = idx === 0;
         const lotChipCls = isCurrent ? 'lot-chip' : 'lot-chip muted';
         const timeStatus = isCurrent ? 'Em andamento' : `${new Date(r.captured_at).toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'})} · lido`;
-        const imgTag = r.image_url ? `<img src="${r.image_url}" style="width:36px; height:36px; object-fit:cover; border-radius:6px; margin-right:8px;" />` : '';
+        const imgUrl = r.image_url || (r.payload && r.payload.image_url);
+        const imgTag = imgUrl ? `<img src="${imgUrl}" style="width:36px; height:36px; object-fit:cover; border-radius:6px; margin-right:8px;" />` : '';
         const article = document.createElement('article');
         article.innerHTML = `<span class="${lotChipCls}">${r.lot != null ? String(r.lot).padStart(3, '0') : '--'}</span><div style="display:flex; align-items:center;">${imgTag}<div><strong>${r.description || 'Lote do Leilão'}</strong><small>${timeStatus}</small></div></div><b>${formatCurrency(r.price_cents)}</b>`;
         list.appendChild(article);
