@@ -17,7 +17,7 @@
           <button class="side-link active" data-page="dashboard"><i>▦</i> Visão geral</button>
           <button class="side-link" data-page="auctions"><i>◉</i> Leilões</button>
           <button class="side-link" data-page="quality"><i>⌁</i> Qualidade OCR <b>3</b></button>
-          <button class="side-link" data-page="subscribers"><i>♙</i> Assinantes</button>
+          <button class="side-link" data-page="customers"><i>♙</i> Clientes</button>
           <button class="side-link" data-page="settings"><i>⚙</i> Configurações</button>
         </nav>
         <div class="operator"><span class="operator-avatar">AS</span><div><strong>André Silva</strong><small>Administrador</small></div><button>⌄</button></div>
@@ -53,7 +53,31 @@
 
         <section class="page" data-page="quality"><div class="section-bar"><div><h2>Qualidade da leitura</h2><p>Revise leituras incertas antes que elas sejam publicadas.</p></div><span class="counter">3 aguardando revisão</span></div><section class="panel review-card"><div class="capture-preview"><span>FRAME CAPTURADO</span><div class="fake-ocr"><b>LOTE 048</b><strong>R$ 21.000,00</strong><p>25 novilhas Nelore prenhes</p></div></div><div class="review-form"><p class="eyebrow">REVISÃO NECESSÁRIA · 74,2%</p><h2>Confirme os dados do lote</h2><label>Lote<input value="048" /></label><label>Preço<input value="R$ 21.000,00" /></label><label>Descrição<input value="25 novilhas Nelore prenhes" /></label><div><button class="outline" id="skip-review">Ignorar</button><button class="primary" id="approve-review">Aprovar e publicar</button></div></div></section></section>
 
-        <section class="page" data-page="subscribers"><div class="section-bar"><div><h2>Assinantes</h2><p>Acompanhe os clientes e a situação das assinaturas.</p></div><button class="outline">Baixar relatório</button></div><div class="metrics compact"><article><p>Assinantes ativos</p><strong>1.284</strong><small class="positive">↑ 12,5% neste mês</small></article><article><p>Visualizando agora</p><strong>862</strong><small>67% dos assinantes ativos</small></article><article><p>Renovações próximas</p><strong>36</strong><small>Nos próximos 7 dias</small></article></div></section>
+        <section class="page" data-page="customers">
+          <div class="section-bar">
+            <div>
+              <h2>Gestão de Clientes</h2>
+              <p>Cadastre clientes, controle o acesso a leilões e registre pagamentos.</p>
+            </div>
+            <button class="primary" id="new-customer-btn">+ Novo Cliente</button>
+          </div>
+          <div class="panel table-panel">
+            <table>
+              <thead>
+                <tr>
+                  <th>NOME</th>
+                  <th>E-MAIL</th>
+                  <th>TELEFONE</th>
+                  <th>CPF</th>
+                  <th>AÇÕES</th>
+                </tr>
+              </thead>
+              <tbody id="customers-tbody">
+                <tr><td colspan="5" style="text-align:center; padding:20px;">Carregando clientes...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
 
         <section class="page" data-page="settings">
           <div class="section-bar"><div><h2>Configurações &amp; Manutenção</h2><p>Gerenciamento de armazenamento, histórico e preferências operacionais.</p></div></div>
@@ -136,6 +160,67 @@
           <button class="outline" data-close="edit-auction-modal">Cancelar</button>
           <button class="primary" id="save-edit-auction">Salvar Alterações</button>
         </div>
+      </div>
+    </div>
+
+    <!-- Modal Novo Cliente -->
+    <div class="modal-overlay" id="new-customer-modal">
+      <div class="modal-box">
+        <button class="modal-close-btn" data-close="new-customer-modal">×</button>
+        <p class="eyebrow">NOVO CLIENTE</p>
+        <h2>Cadastrar Cliente</h2>
+        <label>Nome Completo</label>
+        <input id="customer-name" placeholder="Ex.: João da Silva" required />
+        <label>E-mail</label>
+        <input id="customer-email" type="email" placeholder="joao@email.com" required />
+        <label>CPF</label>
+        <input id="customer-cpf" placeholder="000.000.000-00" required />
+        <label>Telefone</label>
+        <input id="customer-phone" placeholder="11999999999" />
+        <label>Senha Inicial</label>
+        <input id="customer-password" type="password" placeholder="Senha provisória" required />
+        <div class="dialog-actions">
+          <button class="outline" data-close="new-customer-modal">Cancelar</button>
+          <button class="primary" id="save-customer">Salvar Cliente</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Ficha do Cliente -->
+    <div class="modal-overlay" id="customer-profile-modal">
+      <div class="modal-box" style="max-width:600px; width:90%;">
+        <button class="modal-close-btn" data-close="customer-profile-modal">×</button>
+        <p class="eyebrow">FICHA DO CLIENTE</p>
+        <h2 id="profile-name">Nome do Cliente</h2>
+        <p style="margin-bottom:20px; color:#a1a1a6;" id="profile-details">email@email.com | CPF: 000.000.000-00</p>
+        
+        <div class="split-grid" style="grid-template-columns: 1fr 1fr; margin-bottom: 20px;">
+          <section class="panel" style="padding:16px;">
+            <h3>Acesso a Leilões</h3>
+            <div id="profile-access-list" style="margin-top:10px; display:flex; flex-direction:column; gap:8px;">
+              Carregando acessos...
+            </div>
+            <div style="margin-top:16px; display:flex; gap:8px;">
+              <select id="profile-add-access-select" style="flex:1;">
+                <option value="">Selecione o leilão</option>
+              </select>
+              <button class="primary small" id="profile-add-access-btn">Liberar</button>
+            </div>
+          </section>
+          
+          <section class="panel" style="padding:16px;">
+            <h3>Pagamentos</h3>
+            <ul id="profile-payments-list" style="margin-top:10px; list-style:none; padding:0; display:flex; flex-direction:column; gap:8px; max-height:150px; overflow-y:auto;">
+              Carregando pagamentos...
+            </ul>
+            <div style="margin-top:16px;">
+              <input type="number" id="profile-add-payment-amount" placeholder="Valor R$" style="width:100%; margin-bottom:8px;" />
+              <input type="text" id="profile-add-payment-desc" placeholder="Descrição" style="width:100%; margin-bottom:8px;" />
+              <button class="primary small" id="profile-add-payment-btn" style="width:100%;">Registrar Pagamento</button>
+            </div>
+          </section>
+        </div>
+
       </div>
     </div>
 

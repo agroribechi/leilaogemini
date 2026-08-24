@@ -221,6 +221,56 @@ async def correct_reading(reading_id: int, payload: CorrectionInput) -> dict[str
     return event
 
 
+class CustomerInput(BaseModel):
+    name: str = Field(min_length=2, max_length=150)
+    email: str
+    document_cpf: str
+    phone: str = ""
+    password_hash: str
+
+class CustomerPaymentInput(BaseModel):
+    amount_cents: int = Field(ge=0)
+    status: str = "pending"
+    description: str = ""
+
+class CustomerAccessInput(BaseModel):
+    auction_id: str
+
+@app.get("/api/customers")
+def list_customers() -> list[dict[str, Any]]:
+    return database.get_customers()
+
+@app.post("/api/customers", status_code=201)
+def add_customer(payload: CustomerInput) -> dict[str, Any]:
+    return database.create_customer(payload.model_dump())
+
+@app.get("/api/customers/{customer_id}")
+def get_customer_details(customer_id: str) -> dict[str, Any]:
+    customer = database.get_customer(customer_id)
+    if not customer:
+        raise HTTPException(status_code=404, detail="Cliente não encontrado")
+    customer["payments"] = database.get_customer_payments(customer_id)
+    customer["accesses"] = database.get_customer_accesses(customer_id)
+    return customer
+
+@app.post("/api/customers/{customer_id}/payments", status_code=201)
+def add_customer_payment(customer_id: str, payload: CustomerPaymentInput) -> dict[str, Any]:
+    data = payload.model_dump()
+    data["customer_id"] = customer_id
+    return database.create_customer_payment(data)
+
+@app.post("/api/customers/{customer_id}/access", status_code=201)
+def add_customer_access(customer_id: str, payload: CustomerAccessInput) -> dict[str, Any]:
+    data = payload.model_dump()
+    data["customer_id"] = customer_id
+    return database.create_customer_access(data)
+
+@app.delete("/api/customers/{customer_id}/access/{auction_id}")
+def remove_customer_access(customer_id: str, auction_id: str) -> dict[str, Any]:
+    if database.remove_customer_access(customer_id, auction_id):
+        return {"status": "success"}
+    raise HTTPException(status_code=400, detail="Erro ao remover acesso")
+
 @app.websocket("/ws/auctions/{auction_id}")
 async def auction_events(websocket: WebSocket, auction_id: str) -> None:
     await manager.connect(auction_id, websocket)

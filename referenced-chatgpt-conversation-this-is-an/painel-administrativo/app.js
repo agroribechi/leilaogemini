@@ -391,6 +391,192 @@ document.querySelector('#clear-test-readings-btn')?.addEventListener('click', as
   }
 });
 
+// ================= CUSTOMER MANAGEMENT =================
+let customersList = [];
+let activeCustomerId = null;
+
+async function loadCustomers() {
+  try {
+    const res = await fetch(`${API_URL}/api/customers`);
+    if (res.ok) {
+      customersList = await res.json();
+      renderCustomersTable();
+    }
+  } catch (_) {}
+}
+
+function renderCustomersTable() {
+  const tbody = document.querySelector('#customers-tbody');
+  if (!tbody) return;
+  if (!customersList || customersList.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:#888;">Nenhum cliente cadastrado.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = customersList.map(c => `
+    <tr>
+      <td><strong>${c.name}</strong></td>
+      <td>${c.email}</td>
+      <td>${c.phone || '—'}</td>
+      <td>${c.document_cpf}</td>
+      <td><button class="review" data-action="view-customer" data-id="${c.id}">Ficha Completa</button></td>
+    </tr>
+  `).join('');
+}
+
+document.querySelector('#new-customer-btn')?.addEventListener('click', () => {
+  openModal('new-customer-modal');
+});
+
+document.querySelector('#save-customer')?.addEventListener('click', async (e) => {
+  e.preventDefault();
+  const name = document.querySelector('#customer-name').value.trim();
+  const email = document.querySelector('#customer-email').value.trim();
+  const document_cpf = document.querySelector('#customer-cpf').value.trim();
+  const phone = document.querySelector('#customer-phone').value.trim();
+  const password = document.querySelector('#customer-password').value.trim();
+
+  if (!name || !email || !document_cpf || !password) {
+    notify('Preencha os campos obrigatórios (Nome, E-mail, CPF, Senha).');
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_URL}/api/customers`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, document_cpf, phone, password_hash: password })
+    });
+    if (res.ok) {
+      closeModal('new-customer-modal');
+      notify('Cliente cadastrado com sucesso!');
+      loadCustomers();
+    } else {
+      notify('Erro ao cadastrar cliente. Verifique se o e-mail ou CPF já existem.');
+    }
+  } catch (_) {
+    notify('Erro de conexão ao salvar cliente.');
+  }
+});
+
+async function openCustomerProfile(id) {
+  activeCustomerId = id;
+  const modal = document.querySelector('#customer-profile-modal');
+  if (!modal) return;
+  
+  try {
+    const res = await fetch(`${API_URL}/api/customers/${id}`);
+    if (!res.ok) throw new Error('Falha');
+    const customer = await res.json();
+    
+    document.querySelector('#profile-name').textContent = customer.name;
+    document.querySelector('#profile-details').textContent = `${customer.email} | CPF: ${customer.document_cpf} ${customer.phone ? '| Tel: '+customer.phone : ''}`;
+    
+    // Render Payments
+    const payList = document.querySelector('#profile-payments-list');
+    if (customer.payments && customer.payments.length > 0) {
+      payList.innerHTML = customer.payments.map(p => `
+        <li style="display:flex; justify-content:space-between; padding:8px; background:#1e281b; border-radius:6px;">
+          <span>${p.description || 'Pagamento'} - ${new Date(p.created_at).toLocaleDateString()}</span>
+          <strong>${currency(p.amount_cents)}</strong>
+        </li>
+      `).join('');
+    } else {
+      payList.innerHTML = '<li style="color:#888;">Nenhum pagamento registrado.</li>';
+    }
+
+    // Render Accesses
+    const accessList = document.querySelector('#profile-access-list');
+    if (customer.accesses && customer.accesses.length > 0) {
+      accessList.innerHTML = customer.accesses.map(a => {
+        const auc = auctionsList.find(x => x.id === a.auction_id);
+        const aucName = auc ? auc.name : a.auction_id;
+        return `
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:8px; background:#1e281b; border-radius:6px;">
+            <span>${aucName}</span>
+            <button class="outline small" data-action="remove-access" data-auction="${a.auction_id}">Remover</button>
+          </div>
+        `;
+      }).join('');
+    } else {
+      accessList.innerHTML = '<span style="color:#888;">Sem acesso a nenhum leilão.</span>';
+    }
+
+    // Fill Select
+    const select = document.querySelector('#profile-add-access-select');
+    select.innerHTML = '<option value="">Selecione o leilão</option>' + auctionsList.map(a => `<option value="${a.id}">${a.name}</option>`).join('');
+
+    openModal('customer-profile-modal');
+  } catch (_) {
+    notify('Erro ao carregar ficha do cliente.');
+  }
+}
+
+document.querySelector('#profile-add-payment-btn')?.addEventListener('click', async () => {
+  if (!activeCustomerId) return;
+  const amountInput = document.querySelector('#profile-add-payment-amount').value;
+  const desc = document.querySelector('#profile-add-payment-desc').value.trim();
+  if (!amountInput || parseFloat(amountInput) <= 0) {
+    notify('Informe um valor válido.');
+    return;
+  }
+  const amount_cents = Math.round(parseFloat(amountInput) * 100);
+  
+  try {
+    const res = await fetch(`${API_URL}/api/customers/${activeCustomerId}/payments`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount_cents, description: desc, status: 'paid' })
+    });
+    if (res.ok) {
+      notify('Pagamento registrado!');
+      document.querySelector('#profile-add-payment-amount').value = '';
+      document.querySelector('#profile-add-payment-desc').value = '';
+      openCustomerProfile(activeCustomerId);
+    }
+  } catch (_) {
+    notify('Erro ao registrar pagamento.');
+  }
+});
+
+document.querySelector('#profile-add-access-btn')?.addEventListener('click', async () => {
+  if (!activeCustomerId) return;
+  const auctionId = document.querySelector('#profile-add-access-select').value;
+  if (!auctionId) {
+    notify('Selecione um leilão primeiro.');
+    return;
+  }
+  
+  try {
+    const res = await fetch(`${API_URL}/api/customers/${activeCustomerId}/access`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ auction_id: auctionId })
+    });
+    if (res.ok) {
+      notify('Acesso liberado!');
+      openCustomerProfile(activeCustomerId);
+    }
+  } catch (_) {
+    notify('Erro ao liberar acesso.');
+  }
+});
+
+document.addEventListener('click', async (e) => {
+  const btn = e.target.closest('[data-action="view-customer"]');
+  if (btn) openCustomerProfile(btn.dataset.id);
+
+  const removeBtn = e.target.closest('[data-action="remove-access"]');
+  if (removeBtn && activeCustomerId) {
+    if(confirm('Remover acesso a este leilão?')) {
+      try {
+        const res = await fetch(`${API_URL}/api/customers/${activeCustomerId}/access/${removeBtn.dataset.auction}`, { method: 'DELETE' });
+        if (res.ok) openCustomerProfile(activeCustomerId);
+      } catch (_) { notify('Erro ao remover acesso'); }
+    }
+  }
+});
+
 // Inicialização
 loadInitialData();
 updateStorageStats();
+loadCustomers();

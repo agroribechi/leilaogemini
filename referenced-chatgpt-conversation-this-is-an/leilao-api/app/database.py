@@ -94,3 +94,50 @@ def get_storage_stats() -> dict[str, Any]:
         return {"total_readings": count, "estimated_mb": estimated_mb}
     except Exception as e:
         return {"total_readings": 0, "estimated_mb": 0.0, "error": str(e)}
+
+def get_customers() -> list[dict[str, Any]]:
+    response = client.table('customers').select('*').order('created_at', desc=True).execute()
+    return response.data
+
+def get_customer(customer_id: str) -> dict[str, Any] | None:
+    response = client.table('customers').select('*').eq('id', customer_id).execute()
+    return response.data[0] if response.data else None
+
+def create_customer(customer_data: dict[str, Any]) -> dict[str, Any]:
+    response = client.table('customers').insert(customer_data).execute()
+    return response.data[0] if response.data else customer_data
+
+def update_customer(customer_id: str, updates: dict[str, Any]) -> dict[str, Any] | None:
+    response = client.table('customers').update(updates).eq('id', customer_id).execute()
+    return response.data[0] if response.data else None
+
+def get_customer_payments(customer_id: str) -> list[dict[str, Any]]:
+    response = client.table('customer_payments').select('*').eq('customer_id', customer_id).order('created_at', desc=True).execute()
+    return response.data
+
+def create_customer_payment(payment_data: dict[str, Any]) -> dict[str, Any]:
+    response = client.table('customer_payments').insert(payment_data).execute()
+    return response.data[0] if response.data else payment_data
+
+def update_customer_payment(payment_id: str, updates: dict[str, Any]) -> dict[str, Any] | None:
+    response = client.table('customer_payments').update(updates).eq('id', payment_id).execute()
+    return response.data[0] if response.data else None
+
+def get_customer_accesses(customer_id: str) -> list[dict[str, Any]]:
+    response = client.table('customer_auction_access').select('*').eq('customer_id', customer_id).execute()
+    return response.data
+
+def create_customer_access(access_data: dict[str, Any]) -> dict[str, Any]:
+    try:
+        response = client.table('customer_auction_access').insert(access_data).execute()
+        return response.data[0] if response.data else access_data
+    except Exception:
+        return access_data
+
+def remove_customer_access(customer_id: str, auction_id: str) -> bool:
+    try:
+        client.table('customer_auction_access').delete().eq('customer_id', customer_id).eq('auction_id', auction_id).execute()
+        return True
+    except Exception:
+        return False
+
