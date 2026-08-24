@@ -261,6 +261,40 @@ def get_customer_details(customer_id: str) -> dict[str, Any]:
     customer["accesses"] = database.get_customer_accesses(customer_id)
     return customer
 
+class CustomerUpdateInput(BaseModel):
+    name: str | None = Field(default=None, min_length=2, max_length=150)
+    email: str | None = None
+    document_cpf: str | None = None
+    phone: str | None = None
+    password_hash: str | None = None
+
+@app.patch("/api/customers/{customer_id}")
+def update_customer(customer_id: str, payload: CustomerUpdateInput) -> dict[str, Any]:
+    updates = {k: v for k, v in payload.model_dump().items() if v is not None}
+    if not updates:
+        return {"status": "no_updates"}
+    
+    # Validation for unique fields on update
+    if "email" in updates:
+        existing = database.get_customer_by_email(updates["email"])
+        if existing and existing["id"] != customer_id:
+            raise HTTPException(status_code=400, detail={"field": "email", "msg": "E-mail já cadastrado por outro cliente."})
+    if "document_cpf" in updates:
+        existing = database.get_customer_by_cpf(updates["document_cpf"])
+        if existing and existing["id"] != customer_id:
+            raise HTTPException(status_code=400, detail={"field": "document_cpf", "msg": "CPF já cadastrado por outro cliente."})
+
+    updated = database.update_customer(customer_id, updates)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Cliente não encontrado")
+    return updated
+
+@app.delete("/api/customers/{customer_id}")
+def remove_customer(customer_id: str) -> dict[str, Any]:
+    if database.delete_customer(customer_id):
+        return {"status": "success"}
+    raise HTTPException(status_code=400, detail="Erro ao excluir cliente")
+
 @app.post("/api/customers/{customer_id}/payments", status_code=201)
 def add_customer_payment(customer_id: str, payload: CustomerPaymentInput) -> dict[str, Any]:
     data = payload.model_dump()

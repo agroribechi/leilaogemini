@@ -198,6 +198,40 @@
       </div>
     </div>
 
+    <!-- Modal Editar Cliente -->
+    <div class="modal-overlay" id="edit-customer-modal">
+      <div class="modal-box">
+        <button class="modal-close-btn" data-close="edit-customer-modal">×</button>
+        <p class="eyebrow">EDITAR CLIENTE</p>
+        <h2>Atualizar Cliente</h2>
+        <input type="hidden" id="edit-customer-id" />
+        <label>Nome Completo</label>
+        <input id="edit-customer-name" placeholder="Ex.: João da Silva" required />
+        <span class="error-msg" id="err-edit-customer-name" style="color: #ff4a4a; font-size: 12px; margin-top: -10px; margin-bottom: 10px; display: block;"></span>
+        
+        <label>E-mail</label>
+        <input id="edit-customer-email" type="email" placeholder="joao@email.com" required />
+        <span class="error-msg" id="err-edit-customer-email" style="color: #ff4a4a; font-size: 12px; margin-top: -10px; margin-bottom: 10px; display: block;"></span>
+        
+        <label>CPF</label>
+        <input id="edit-customer-cpf" placeholder="000.000.000-00" required />
+        <span class="error-msg" id="err-edit-customer-cpf" style="color: #ff4a4a; font-size: 12px; margin-top: -10px; margin-bottom: 10px; display: block;"></span>
+        
+        <label>Telefone (WhatsApp)</label>
+        <input id="edit-customer-phone" placeholder="11999999999" />
+        <span class="error-msg" id="err-edit-customer-phone" style="color: #ff4a4a; font-size: 12px; margin-top: -10px; margin-bottom: 10px; display: block;"></span>
+        
+        <label>Nova Senha (Opcional)</label>
+        <input id="edit-customer-password" type="password" placeholder="Deixe em branco para manter a atual" />
+        <span class="error-msg" id="err-edit-customer-password" style="color: #ff4a4a; font-size: 12px; margin-top: -10px; margin-bottom: 10px; display: block;"></span>
+        
+        <div class="dialog-actions">
+          <button class="outline" data-close="edit-customer-modal">Cancelar</button>
+          <button class="primary" id="update-customer">Atualizar Cliente</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Modal Ficha do Cliente -->
     <div class="modal-overlay" id="customer-profile-modal">
       <div class="modal-box" style="max-width:600px; width:90%;">

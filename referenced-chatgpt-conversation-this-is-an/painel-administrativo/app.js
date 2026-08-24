@@ -418,7 +418,11 @@ function renderCustomersTable() {
       <td>${c.email}</td>
       <td>${c.phone || '—'}</td>
       <td>${c.document_cpf}</td>
-      <td><button class="review" data-action="view-customer" data-id="${c.id}">Ficha Completa</button></td>
+      <td style="display:flex; gap:8px;">
+        <button class="review" data-action="view-customer" data-id="${c.id}">Ficha</button>
+        <button class="review" data-action="edit-customer" data-id="${c.id}">✎</button>
+        <button class="review" style="color:#ff4a4a;" data-action="delete-customer" data-id="${c.id}">✖</button>
+      </td>
     </tr>
   `).join('');
 }
@@ -611,9 +615,115 @@ document.querySelector('#profile-add-access-btn')?.addEventListener('click', asy
   }
 });
 
+document.querySelector('#update-customer')?.addEventListener('click', async (e) => {
+  e.preventDefault();
+  const id = document.querySelector('#edit-customer-id').value;
+  const name = document.querySelector('#edit-customer-name').value.trim();
+  const email = document.querySelector('#edit-customer-email').value.trim();
+  const document_cpf = document.querySelector('#edit-customer-cpf').value.trim();
+  const phone = document.querySelector('#edit-customer-phone').value.trim();
+  const password = document.querySelector('#edit-customer-password').value.trim();
+  
+  const errName = document.querySelector('#err-edit-customer-name');
+  const errEmail = document.querySelector('#err-edit-customer-email');
+  const errCpf = document.querySelector('#err-edit-customer-cpf');
+  const errPhone = document.querySelector('#err-edit-customer-phone');
+  const errPass = document.querySelector('#err-edit-customer-password');
+  
+  if (errName) errName.textContent = '';
+  if (errEmail) errEmail.textContent = '';
+  if (errCpf) errCpf.textContent = '';
+  if (errPhone) errPhone.textContent = '';
+  if (errPass) errPass.textContent = '';
+
+  const payload = { name, email, document_cpf, phone };
+  if (password) payload.password_hash = password;
+
+  try {
+    const res = await fetch(`${API_URL}/api/customers/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (res.ok) {
+      closeModal('edit-customer-modal');
+      notify('Cliente atualizado com sucesso!');
+      loadCustomers();
+    } else {
+      const errorData = await res.json();
+      let hasFieldErrors = false;
+
+      if (errorData.detail && Array.isArray(errorData.detail)) {
+        errorData.detail.forEach(err => {
+          const field = err.loc ? err.loc[err.loc.length - 1] : '';
+          let msg = err.msg;
+          if (msg === 'field required') msg = 'Este campo é obrigatório.';
+          if (msg.includes('email')) msg = 'E-mail inválido.';
+          if (msg.includes('at least')) msg = 'Muito curto.';
+          
+          if (field === 'name' && errName) { errName.textContent = msg; hasFieldErrors = true; }
+          if (field === 'email' && errEmail) { errEmail.textContent = msg; hasFieldErrors = true; }
+          if (field === 'document_cpf' && errCpf) { errCpf.textContent = msg; hasFieldErrors = true; }
+          if (field === 'phone' && errPhone) { errPhone.textContent = msg; hasFieldErrors = true; }
+          if (field === 'password_hash' && errPass) { errPass.textContent = msg; hasFieldErrors = true; }
+        });
+      } 
+      else if (errorData.detail && errorData.detail.field) {
+        if (errorData.detail.field === 'email' && errEmail) {
+          errEmail.textContent = errorData.detail.msg;
+          hasFieldErrors = true;
+        } else if (errorData.detail.field === 'document_cpf' && errCpf) {
+          errCpf.textContent = errorData.detail.msg;
+          hasFieldErrors = true;
+        } else {
+          notify(errorData.detail.msg);
+          hasFieldErrors = true;
+        }
+      }
+
+      if (!hasFieldErrors) {
+        notify('Erro ao atualizar cliente. Verifique os dados.');
+      }
+    }
+  } catch (_) {
+    notify('Erro de conexão ao atualizar cliente.');
+  }
+});
+
 document.addEventListener('click', async (e) => {
   const btn = e.target.closest('[data-action="view-customer"]');
   if (btn) openCustomerProfile(btn.dataset.id);
+
+  const editBtn = e.target.closest('[data-action="edit-customer"]');
+  if (editBtn) {
+    const customer = customersList.find(c => c.id === editBtn.dataset.id);
+    if (customer) {
+      document.querySelector('#edit-customer-id').value = customer.id;
+      document.querySelector('#edit-customer-name').value = customer.name;
+      document.querySelector('#edit-customer-email').value = customer.email;
+      document.querySelector('#edit-customer-cpf').value = customer.document_cpf;
+      document.querySelector('#edit-customer-phone').value = customer.phone || '';
+      document.querySelector('#edit-customer-password').value = '';
+      openModal('edit-customer-modal');
+    }
+  }
+
+  const deleteBtn = e.target.closest('[data-action="delete-customer"]');
+  if (deleteBtn) {
+    if (confirm('Tem certeza que deseja excluir este cliente? Essa ação é permanente.')) {
+      try {
+        const res = await fetch(`${API_URL}/api/customers/${deleteBtn.dataset.id}`, { method: 'DELETE' });
+        if (res.ok) {
+          notify('Cliente excluído com sucesso.');
+          loadCustomers();
+        } else {
+          notify('Erro ao excluir cliente.');
+        }
+      } catch (_) {
+        notify('Erro de conexão ao excluir cliente.');
+      }
+    }
+  }
 
   const removeBtn = e.target.closest('[data-action="remove-access"]');
   if (removeBtn && activeCustomerId) {

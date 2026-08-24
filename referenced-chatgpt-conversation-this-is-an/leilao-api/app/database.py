@@ -119,6 +119,13 @@ def update_customer(customer_id: str, updates: dict[str, Any]) -> dict[str, Any]
     response = client.table('customers').update(updates).eq('id', customer_id).execute()
     return response.data[0] if response.data else None
 
+def delete_customer(customer_id: str) -> bool:
+    try:
+        client.table('customers').delete().eq('id', customer_id).execute()
+        return True
+    except Exception:
+        return False
+
 def get_customer_payments(customer_id: str) -> list[dict[str, Any]]:
     response = client.table('customer_payments').select('*').eq('customer_id', customer_id).order('created_at', desc=True).execute()
     return response.data
