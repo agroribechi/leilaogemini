@@ -52,7 +52,6 @@ def create_reading(reading: dict[str, Any]) -> dict[str, Any]:
         "price_cents": reading.get("price_cents"),
         "description": reading.get("description", ""),
         "confidence": reading.get("confidence"),
-        "image_url": reading.get("image_url"),
         "payload": reading
     }
     try:
