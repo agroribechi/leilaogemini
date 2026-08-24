@@ -435,15 +435,20 @@ document.querySelector('#save-customer')?.addEventListener('click', async (e) =>
   const phone = document.querySelector('#customer-phone').value.trim();
   const password = document.querySelector('#customer-password').value.trim();
   
+  const errName = document.querySelector('#err-customer-name');
   const errEmail = document.querySelector('#err-customer-email');
   const errCpf = document.querySelector('#err-customer-cpf');
-  if (errEmail) errEmail.textContent = '';
-  if (errCpf) errCpf.textContent = '';
-
-  if (!name || !email || !document_cpf || !password) {
-    notify('Preencha os campos obrigatórios (Nome, E-mail, CPF, Senha).');
-    return;
-  }
+  const errPhone = document.querySelector('#err-customer-phone');
+  const errPass = document.querySelector('#err-customer-password');
+  
+  const clearErrs = () => {
+    if (errName) errName.textContent = '';
+    if (errEmail) errEmail.textContent = '';
+    if (errCpf) errCpf.textContent = '';
+    if (errPhone) errPhone.textContent = '';
+    if (errPass) errPass.textContent = '';
+  };
+  clearErrs();
 
   try {
     const res = await fetch(`${API_URL}/api/customers`, {
@@ -462,15 +467,39 @@ document.querySelector('#save-customer')?.addEventListener('click', async (e) =>
       loadCustomers();
     } else {
       const errorData = await res.json();
-      if (errorData.detail && errorData.detail.field) {
+      let hasFieldErrors = false;
+
+      // Tratar erros 422 do FastAPI (Array)
+      if (errorData.detail && Array.isArray(errorData.detail)) {
+        errorData.detail.forEach(err => {
+          const field = err.loc ? err.loc[err.loc.length - 1] : '';
+          let msg = err.msg;
+          if (msg === 'field required') msg = 'Este campo é obrigatório.';
+          if (msg.includes('email')) msg = 'E-mail inválido.';
+          if (msg.includes('at least')) msg = 'Muito curto.';
+          
+          if (field === 'name' && errName) { errName.textContent = msg; hasFieldErrors = true; }
+          if (field === 'email' && errEmail) { errEmail.textContent = msg; hasFieldErrors = true; }
+          if (field === 'document_cpf' && errCpf) { errCpf.textContent = msg; hasFieldErrors = true; }
+          if (field === 'phone' && errPhone) { errPhone.textContent = msg; hasFieldErrors = true; }
+          if (field === 'password_hash' && errPass) { errPass.textContent = msg; hasFieldErrors = true; }
+        });
+      } 
+      // Tratar erros customizados do nosso código (Dict)
+      else if (errorData.detail && errorData.detail.field) {
         if (errorData.detail.field === 'email' && errEmail) {
           errEmail.textContent = errorData.detail.msg;
+          hasFieldErrors = true;
         } else if (errorData.detail.field === 'document_cpf' && errCpf) {
           errCpf.textContent = errorData.detail.msg;
+          hasFieldErrors = true;
         } else {
-          notify(errorData.detail.msg || 'Erro ao cadastrar cliente.');
+          notify(errorData.detail.msg);
+          hasFieldErrors = true;
         }
-      } else {
+      }
+
+      if (!hasFieldErrors) {
         notify('Erro ao cadastrar cliente. Verifique os dados.');
       }
     }

@@ -171,16 +171,26 @@
         <h2>Cadastrar Cliente</h2>
         <label>Nome Completo</label>
         <input id="customer-name" placeholder="Ex.: João da Silva" required />
+        <span class="error-msg" id="err-customer-name" style="color: #ff4a4a; font-size: 12px; margin-top: -10px; margin-bottom: 10px; display: block;"></span>
+        
         <label>E-mail</label>
         <input id="customer-email" type="email" placeholder="joao@email.com" required />
-        <span class="error-msg" id="err-customer-email" style="color: #ff4a4a; font-size: 12px; margin-top: -10px; margin-bottom: 10px; display: block;"></span>
+        <small style="display:block; margin-top:-10px; margin-bottom:5px; color:#888;">Usado para o login no aplicativo.</small>
+        <span class="error-msg" id="err-customer-email" style="color: #ff4a4a; font-size: 12px; margin-bottom: 10px; display: block;"></span>
+        
         <label>CPF</label>
         <input id="customer-cpf" placeholder="000.000.000-00" required />
-        <span class="error-msg" id="err-customer-cpf" style="color: #ff4a4a; font-size: 12px; margin-top: -10px; margin-bottom: 10px; display: block;"></span>
-        <label>Telefone</label>
+        <small style="display:block; margin-top:-10px; margin-bottom:5px; color:#888;">Digite apenas números ou no formato completo.</small>
+        <span class="error-msg" id="err-customer-cpf" style="color: #ff4a4a; font-size: 12px; margin-bottom: 10px; display: block;"></span>
+        
+        <label>Telefone (WhatsApp)</label>
         <input id="customer-phone" placeholder="11999999999" />
+        <span class="error-msg" id="err-customer-phone" style="color: #ff4a4a; font-size: 12px; margin-top: -10px; margin-bottom: 10px; display: block;"></span>
+        
         <label>Senha Inicial</label>
         <input id="customer-password" type="password" placeholder="Senha provisória" required />
+        <small style="display:block; margin-top:-10px; margin-bottom:5px; color:#888;">Mínimo de 6 caracteres.</small>
+        <span class="error-msg" id="err-customer-password" style="color: #ff4a4a; font-size: 12px; margin-bottom: 10px; display: block;"></span>
         <div class="dialog-actions">
           <button class="outline" data-close="new-customer-modal">Cancelar</button>
           <button class="primary" id="save-customer">Salvar Cliente</button>
