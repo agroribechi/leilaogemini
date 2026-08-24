@@ -242,7 +242,15 @@ def list_customers() -> list[dict[str, Any]]:
 
 @app.post("/api/customers", status_code=201)
 def add_customer(payload: CustomerInput) -> dict[str, Any]:
-    return database.create_customer(payload.model_dump())
+    if database.get_customer_by_email(payload.email):
+        raise HTTPException(status_code=400, detail={"field": "email", "msg": "E-mail já cadastrado no sistema."})
+    if database.get_customer_by_cpf(payload.document_cpf):
+        raise HTTPException(status_code=400, detail={"field": "document_cpf", "msg": "CPF já cadastrado no sistema."})
+    
+    try:
+        return database.create_customer(payload.model_dump())
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Erro interno ao criar cliente.")
 
 @app.get("/api/customers/{customer_id}")
 def get_customer_details(customer_id: str) -> dict[str, Any]:

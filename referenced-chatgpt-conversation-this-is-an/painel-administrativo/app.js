@@ -434,6 +434,11 @@ document.querySelector('#save-customer')?.addEventListener('click', async (e) =>
   const document_cpf = document.querySelector('#customer-cpf').value.trim();
   const phone = document.querySelector('#customer-phone').value.trim();
   const password = document.querySelector('#customer-password').value.trim();
+  
+  const errEmail = document.querySelector('#err-customer-email');
+  const errCpf = document.querySelector('#err-customer-cpf');
+  if (errEmail) errEmail.textContent = '';
+  if (errCpf) errCpf.textContent = '';
 
   if (!name || !email || !document_cpf || !password) {
     notify('Preencha os campos obrigatórios (Nome, E-mail, CPF, Senha).');
@@ -447,11 +452,27 @@ document.querySelector('#save-customer')?.addEventListener('click', async (e) =>
       body: JSON.stringify({ name, email, document_cpf, phone, password_hash: password })
     });
     if (res.ok) {
+      document.querySelector('#customer-name').value = '';
+      document.querySelector('#customer-email').value = '';
+      document.querySelector('#customer-cpf').value = '';
+      document.querySelector('#customer-phone').value = '';
+      document.querySelector('#customer-password').value = '';
       closeModal('new-customer-modal');
       notify('Cliente cadastrado com sucesso!');
       loadCustomers();
     } else {
-      notify('Erro ao cadastrar cliente. Verifique se o e-mail ou CPF já existem.');
+      const errorData = await res.json();
+      if (errorData.detail && errorData.detail.field) {
+        if (errorData.detail.field === 'email' && errEmail) {
+          errEmail.textContent = errorData.detail.msg;
+        } else if (errorData.detail.field === 'document_cpf' && errCpf) {
+          errCpf.textContent = errorData.detail.msg;
+        } else {
+          notify(errorData.detail.msg || 'Erro ao cadastrar cliente.');
+        }
+      } else {
+        notify('Erro ao cadastrar cliente. Verifique os dados.');
+      }
     }
   } catch (_) {
     notify('Erro de conexão ao salvar cliente.');

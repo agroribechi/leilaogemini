@@ -103,6 +103,14 @@ def get_customer(customer_id: str) -> dict[str, Any] | None:
     response = client.table('customers').select('*').eq('id', customer_id).execute()
     return response.data[0] if response.data else None
 
+def get_customer_by_email(email: str) -> dict[str, Any] | None:
+    response = client.table('customers').select('*').eq('email', email).execute()
+    return response.data[0] if response.data else None
+
+def get_customer_by_cpf(cpf: str) -> dict[str, Any] | None:
+    response = client.table('customers').select('*').eq('document_cpf', cpf).execute()
+    return response.data[0] if response.data else None
+
 def create_customer(customer_data: dict[str, Any]) -> dict[str, Any]:
     response = client.table('customers').insert(customer_data).execute()
     return response.data[0] if response.data else customer_data
